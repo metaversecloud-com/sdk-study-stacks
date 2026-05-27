@@ -1,0 +1,134 @@
+import { Request, Response } from "express";
+import {
+  applyDailyStreak,
+  dateKey,
+  deleteSession,
+  errorHandler,
+  evaluateBadges,
+  fetchEcosystemDecks,
+  fetchUserDecks,
+  findDeck,
+  getCredentials,
+  getSession,
+  getVisitor,
+  normalizeStudyData,
+  STUDY_STACKS_DATA_KEY,
+  updateResultsRow,
+} from "@utils/index.js";
+import { AssetResultsRow, SessionSummary, VisitorStudyData } from "@shared/types/StudyStacksTypes.js";
+
+export const handleCompleteSession = async (req: Request, res: Response) => {
+  try {
+    const credentials = getCredentials(req.query);
+    const { urlSlug, profileId, displayName } = credentials;
+
+    const { sessionId } = req.body as { sessionId: string };
+    if (!sessionId) return res.status(400).json({ success: false, message: "sessionId required." });
+
+    const session = getSession(sessionId);
+    if (!session) return res.status(404).json({ success: false, message: "Session not found or expired." });
+
+    const deck = await findDeck(credentials, session.deckId, session.deckScope);
+    if (!deck) {
+      deleteSession(sessionId);
+      return res.status(404).json({ success: false, message: "Deck no longer available." });
+    }
+    // Pull every deck the visitor might have mastery in (ecosystem + their own)
+    // so evaluateBadges can compute Deck Done / Polyglot across their full library.
+    const [ecoDecks, userDecks] = await Promise.all([fetchEcosystemDecks(credentials), fetchUserDecks(credentials)]);
+    const allDecks = { ...ecoDecks, ...userDecks };
+
+    const { visitor, visitorInventory } = await getVisitor(credentials, true);
+    const dataKey = STUDY_STACKS_DATA_KEY;
+    const visitorDataObject = (visitor.dataObject || {}) as Record<string, any>;
+    const studyDataBefore: VisitorStudyData = normalizeStudyData(visitorDataObject[dataKey]);
+    const studyData: VisitorStudyData = JSON.parse(JSON.stringify(studyDataBefore));
+
+    const progress = studyData.decks[session.deckId] || {
+      deckId: session.deckId,
+      cards: {},
+      sessionsCompleted: 0,
+      lastStudiedAt: Date.now(),
+    };
+    progress.sessionsCompleted = (progress.sessionsCompleted || 0) + 1;
+    progress.lastStudiedAt = Date.now();
+    studyData.decks[session.deckId] = progress;
+    studyData.totalSessionsCompleted = (studyData.totalSessionsCompleted || 0) + 1;
+
+    const today = dateKey(Date.now());
+    studyData.streak = applyDailyStreak(studyData.streak, today);
+
+    const lockId = `${dataKey}-complete-${Math.round(Date.now() / 5000) * 5000}`;
+    await visitor.updateDataObject(
+      { [dataKey]: studyData },
+      {
+        analytics: [{ analyticName: "studyStacksSessionComplete", profileId, uniqueKey: profileId, urlSlug }],
+        lock: { lockId, releaseLock: true },
+      },
+    );
+
+    // Update ecosystem-wide aggregate results
+    const mostStudiedDeckId = Object.entries(studyData.decks).sort(
+      ([, a], [, b]) => (b.sessionsCompleted || 0) - (a.sessionsCompleted || 0),
+    )[0]?.[0];
+
+    const resultsRow: AssetResultsRow = {
+      displayName: displayName || "Player",
+      totalSessions: studyData.totalSessionsCompleted,
+      mostStudiedDeckId,
+      currentStreak: studyData.streak.current,
+      lastSeenAt: Date.now(),
+    };
+
+    await updateResultsRow(credentials, profileId, resultsRow).catch((err: any) =>
+      console.warn("Failed to update aggregate results", err),
+    );
+
+    // Evaluate and grant badges
+    const newBadges = await evaluateBadges({
+      credentials,
+      visitor,
+      visitorInventory,
+      studyDataAfter: studyData,
+      studyDataBefore,
+      decks: allDecks,
+      sessionMode: session.mode,
+      sessionCorrect: session.correctCount,
+      sessionTotal: session.totalAnswered,
+      comebackTransitions: session.comebackTransitions,
+    });
+
+    if (newBadges.length > 0) {
+      const earned = { ...(studyData.earnedBadges || {}) };
+      for (const b of newBadges) earned[b] = Date.now();
+      studyData.earnedBadges = earned;
+      await visitor
+        .updateDataObject(
+          { [`${dataKey}.earnedBadges`]: earned },
+          { lock: { lockId: `${dataKey}-badges-${Date.now()}`, releaseLock: true } },
+        )
+        .catch((err: any) => console.warn("Failed to persist earnedBadges", err));
+    }
+
+    const summary: SessionSummary = {
+      cardsStudied: session.totalAnswered,
+      correctCount: session.correctCount,
+      totalCardsInSession: session.cardIds.length,
+      masteryDeltas: session.masteryDeltas,
+      newBadges,
+      streakAfter: { current: studyData.streak.current, longest: studyData.streak.longest },
+    };
+
+    deleteSession(sessionId);
+
+    return res.json({ success: true, summary, visitorStudyData: studyData });
+  } catch (error) {
+    return errorHandler({
+      error,
+      functionName: "handleCompleteSession",
+      message: "Error completing study session.",
+      req,
+      res,
+    });
+  }
+};
