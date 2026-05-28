@@ -22,6 +22,15 @@ export const CardEditor = ({
   const showPreview = trimmedImageUrl.length > 0 && !imageError;
   return (
     <div className="ss-card-editor" role="group" aria-label={`Card ${index + 1} of ${total}`}>
+      {showPreview && (
+        <img
+          className="ss-card-editor__preview"
+          src={trimmedImageUrl}
+          alt={`Front image preview for card ${index + 1}`}
+          onError={() => setImageError(true)}
+          onLoad={() => setImageError(false)}
+        />
+      )}
       <div className="ss-card-editor__field">
         <label htmlFor={`${id}-front`}>Front</label>
         <input
@@ -33,19 +42,8 @@ export const CardEditor = ({
           maxLength={1000}
         />
       </div>
-      <div className="ss-card-editor__field">
-        <label htmlFor={`${id}-back`}>Back</label>
-        <input
-          id={`${id}-back`}
-          className="input"
-          value={card.back}
-          onChange={(e) => onChange({ ...card, back: e.target.value })}
-          placeholder="Answer"
-          maxLength={1000}
-        />
-      </div>
       <div className="ss-card-editor__field ss-card-editor__field--image">
-        <label htmlFor={`${id}-image`}>Front image URL (optional)</label>
+        <label htmlFor={`${id}-image`}>Front image URL</label>
         <input
           id={`${id}-image`}
           className="input"
@@ -58,25 +56,27 @@ export const CardEditor = ({
           placeholder="https://example.com/image.png"
           maxLength={2000}
         />
-        {showPreview && (
-          <img
-            className="ss-card-editor__preview"
-            src={trimmedImageUrl}
-            alt={`Front image preview for card ${index + 1}`}
-            onError={() => setImageError(true)}
-            onLoad={() => setImageError(false)}
-          />
-        )}
         {trimmedImageUrl.length > 0 && imageError && (
           <p className="ss-card-editor__preview-error" role="status">
             Couldn’t load this image. Check the URL is public and points to an image.
           </p>
         )}
       </div>
+      <div className="ss-card-editor__field">
+        <label htmlFor={`${id}-back`}>Back</label>
+        <input
+          id={`${id}-back`}
+          className="input"
+          value={card.back}
+          onChange={(e) => onChange({ ...card, back: e.target.value })}
+          placeholder="Answer"
+          maxLength={1000}
+        />
+      </div>
       <div className="ss-card-editor__actions">
         <button
           type="button"
-          className="btn btn-text"
+          className="btn btn-outline"
           onClick={() => onMove(-1)}
           disabled={index === 0}
           aria-label={`Move card ${index + 1} up`}
@@ -85,7 +85,7 @@ export const CardEditor = ({
         </button>
         <button
           type="button"
-          className="btn btn-text"
+          className="btn btn-outline"
           onClick={() => onMove(1)}
           disabled={index === total - 1}
           aria-label={`Move card ${index + 1} down`}
@@ -94,7 +94,7 @@ export const CardEditor = ({
         </button>
         <button
           type="button"
-          className="btn btn-danger-outline"
+          className="btn btn-outline btn-danger-outline"
           onClick={onDelete}
           aria-label={`Delete card ${index + 1}`}
         >

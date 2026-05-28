@@ -27,15 +27,20 @@ body.ss-body--subject {
   /* min-height so the wash fills the viewport even when content is short —
    * html/body both carry an opaque bg, so the body box is what's visible. */
   min-height: 100vh;
-  background: var(--ss-page-accent);
+  /* stars.png is the top layer (transparent texture) over the accent color/
+   * gradient — it sits on top without hiding the subject color. */
+  background:
+    url("../assets/stars.png") bottom right no-repeat,
+    var(--ss-page-accent);
   background-attachment: fixed;
+  background-blend-mode: soft-light;
   transition: background var(--ss-anim-slow) ease;
 }
 body.ss-body--math {
   --ss-page-accent: var(--ss-subj-math);
 }
 body.ss-body--science {
-  --ss-page-accent: var(--ss-grad-mint);
+  --ss-page-accent: var(--ss-grad-science);
 }
 body.ss-body--history {
   --ss-page-accent: var(--ss-subj-history);
@@ -52,11 +57,11 @@ body.ss-body--art {
 body.ss-body--other {
   --ss-page-accent: var(--ss-subj-other);
 }
-@media (prefers-reduced-motion: reduce) {
+/* @media (prefers-reduced-motion: reduce) {
   body.ss-body--subject {
     transition: none;
   }
-}
+} */
 
 /* Greeting / header */
 .ss-greeting {
@@ -120,6 +125,15 @@ body.ss-body--other {
   align-items: center;
   flex-wrap: wrap;
   flex: 0 1 auto;
+}
+
+/* Text */
+
+.ss-text-light {
+  font-family: var(--ss-font-body);
+  font-weight: 500;
+  color: var(--ss-text-light) !important;
+  text-shadow: var(--ss-shadow);
 }
 
 /* Mascot */
@@ -341,31 +355,31 @@ body.ss-body--other {
 /* Subject color modifiers */
 .ss-deck-card--math {
   --deck-color: var(--ss-subj-math);
-  --deck-grad: var(--ss-grad-hero);
+  --deck-grad: var(--ss-grad-math);
 }
 .ss-deck-card--science {
   --deck-color: var(--ss-subj-science);
-  --deck-grad: var(--ss-grad-mint);
+  --deck-grad: var(--ss-grad-science);
 }
 .ss-deck-card--history {
   --deck-color: var(--ss-subj-history);
-  --deck-grad: var(--ss-grad-coral);
+  --deck-grad: var(--ss-grad-history);
 }
 .ss-deck-card--ela {
   --deck-color: var(--ss-subj-ela);
-  --deck-grad: var(--ss-grad-purple);
+  --deck-grad: var(--ss-grad-ela);
 }
 .ss-deck-card--language {
   --deck-color: var(--ss-subj-language);
-  --deck-grad: linear-gradient(135deg, #7be1e1, #2dc7c7);
+  --deck-grad: var(--ss-grad-language);
 }
 .ss-deck-card--art {
   --deck-color: var(--ss-subj-art);
-  --deck-grad: var(--ss-grad-pink);
+  --deck-grad: var(--ss-grad-art);
 }
 .ss-deck-card--other {
   --deck-color: var(--ss-subj-other);
-  --deck-grad: var(--ss-grad-hero);
+  --deck-grad: var(--ss-grad-other);
 }
 
 /* Mastery ring */
@@ -467,6 +481,9 @@ body.ss-body--other {
 .ss-flip-card {
   position: relative;
   width: 100%;
+  /* Both faces share a single grid cell so the card grows to fit the taller
+   * face (min 300px) instead of clipping/scrolling its content. */
+  display: grid;
   min-height: 300px;
   transition: transform var(--ss-anim-med) ease;
   transform-style: preserve-3d;
@@ -475,8 +492,7 @@ body.ss-body--other {
   transform: rotateY(180deg);
 }
 .ss-flip-card__face {
-  position: absolute;
-  inset: 0;
+  grid-area: 1 / 1;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -494,13 +510,11 @@ body.ss-body--other {
   color: var(--ss-text);
   overflow-wrap: anywhere;
   word-break: break-word;
-  overflow-y: auto;
 }
 .ss-flip-card__face--back {
   transform: rotateY(180deg);
   background: var(--ss-grad-card-back);
   color: #fff;
-  border-color: transparent;
 }
 .ss-flip-card__image {
   display: block;
@@ -519,13 +533,6 @@ body.ss-body--other {
   width: auto;
   object-fit: contain;
   border-radius: var(--ss-radius-input);
-}
-.ss-flip-card__hint {
-  margin-top: 0.6rem;
-  font-family: var(--ss-font-body);
-  font-size: 0.95rem;
-  font-weight: 500;
-  color: var(--ss-text-dim);
 }
 .ss-flip-card__face--back .ss-flip-card__hint {
   color: rgba(255, 255, 255, 0.85);
@@ -573,6 +580,8 @@ body.ss-body--other {
   font-family: var(--ss-font-display);
   font-weight: 800;
   font-size: 1rem;
+  box-shadow: var(--ss-shadow);
+  cursor: pointer;
 }
 .ss-rating-btn--got-it {
   background: var(--ss-success);
@@ -649,7 +658,7 @@ body.ss-body--other {
 }
 @keyframes ss-burst-anim {
   0% {
-    box-shadow: 0 0 0 0 rgba(92, 225, 185, 0.7);
+    box-shadow: 0 0 0 0 var(--ss-yellow);
   }
   60% {
     box-shadow: 0 0 0 24px rgba(92, 225, 185, 0);
@@ -751,8 +760,11 @@ body.ss-body--other {
 /* Badges grid */
 .ss-badge-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 0.75rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  list-style: "none";
+  padding: 0;
+  margin: 0;
 }
 .ss-badge-tile {
   min-width: 0;
@@ -764,18 +776,11 @@ body.ss-body--other {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.4rem;
   text-align: center;
-  padding: 1rem;
-  border-radius: var(--ss-radius-card);
-  background: var(--ss-bg-card);
-  border: 1px solid var(--ss-border);
-  box-shadow: var(--ss-shadow-sm);
 }
 .ss-badge-tile__img {
-  width: 72px;
-  height: 72px;
-  object-fit: contain;
+  max-width: 100%;
 }
 .ss-badge-tile--locked .ss-badge-tile__img {
   filter: grayscale(1) opacity(0.5);
@@ -960,7 +965,7 @@ body.ss-body--other {
   grid-area: image;
 }
 .ss-card-editor__preview {
-  margin-top: 0.4rem;
+  margin: 0 auto;
   max-height: 96px;
   max-width: 160px;
   width: auto;
@@ -997,7 +1002,7 @@ body.ss-body--other {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin: 0.5rem 0 1rem;
+  margin: 0.5rem 0;
   gap: 0.5rem;
   flex-wrap: wrap;
 }

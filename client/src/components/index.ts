@@ -2,6 +2,7 @@ export * from "./AdminView.js";
 export * from "./AdminIconButton.js";
 export * from "./BadgesTab.js";
 export * from "./CardEditor.js";
+export * from "./Confetti.js";
 export * from "./ConfirmationModal.js";
 export * from "./DeckCard.js";
 export * from "./DecksList.js";

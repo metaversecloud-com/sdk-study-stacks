@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import type { SessionCard } from "@/context/types";
+import { playAnswerSound } from "@/utils";
 
 const shuffle = <T,>(arr: T[]): T[] => {
   const out = [...arr];
@@ -17,6 +18,7 @@ export const QuizCard = ({
   onAnswer,
   trueFalseFallback,
   autoAdvance,
+  muted,
 }: {
   card: SessionCard;
   index: number;
@@ -24,6 +26,7 @@ export const QuizCard = ({
   onAnswer: (isCorrect: boolean) => void;
   trueFalseFallback?: boolean;
   autoAdvance?: boolean;
+  muted: boolean;
 }) => {
   const [picked, setPicked] = useState<string | null>(null);
   const [revealed, setRevealed] = useState(false);
@@ -58,6 +61,7 @@ export const QuizCard = ({
     if (picked) return;
     setPicked(option.text);
     setRevealed(true);
+    playAnswerSound(option.isCorrect ? "correct" : "incorrect", muted);
     if (autoAdvance) {
       setTimeout(() => onAnswer(option.isCorrect), 350);
     } else {

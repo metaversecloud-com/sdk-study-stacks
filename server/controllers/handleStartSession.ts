@@ -20,7 +20,7 @@ const SESSION_SIZE: { [mode in StudyMode]: number } = {
 export const handleStartSession = async (req: Request, res: Response) => {
   try {
     const credentials = getCredentials(req.query);
-    const { assetId, visitorId } = credentials;
+    const { assetId, visitorId, profileId, urlSlug } = credentials;
 
     const deckId: string = req.body?.deckId;
     const mode: StudyMode = req.body?.mode;
@@ -38,14 +38,10 @@ export const handleStartSession = async (req: Request, res: Response) => {
 
     const { visitor } = await getVisitor(credentials, true);
 
-    // Drafts: ecosystem drafts only to admins; user drafts only to creator
-    if (deck.status !== "published") {
-      if (scope === "ecosystem" && !visitor.isAdmin) {
-        return res.status(404).json({ success: false, message: "Deck not found." });
-      }
-      if (scope === "user" && deck.createdByProfileId !== credentials.profileId) {
-        return res.status(404).json({ success: false, message: "Deck not found." });
-      }
+    // Ecosystem drafts are admin-only. User decks come from the caller's own
+    // data object, so their drafts are always the caller's to study.
+    if (deck.status !== "published" && scope === "ecosystem" && !visitor.isAdmin) {
+      return res.status(404).json({ success: false, message: "Deck not found." });
     }
 
     const visitorDataObject = (visitor.dataObject || {}) as Record<string, any>;
@@ -73,6 +69,11 @@ export const handleStartSession = async (req: Request, res: Response) => {
       cardIds: computed.map((c) => c.card.id),
       startingMastery,
     });
+
+    await visitor.updateDataObject(
+      {},
+      { analytics: [{ analyticName: "starts", profileId, uniqueKey: profileId, urlSlug }] },
+    );
 
     return res.json({
       success: true,

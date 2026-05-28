@@ -11,6 +11,7 @@ import {
   getCredentials,
   getSession,
   getVisitor,
+  getVisitorBadges,
   normalizeStudyData,
   STUDY_STACKS_DATA_KEY,
   updateResultsRow,
@@ -62,7 +63,7 @@ export const handleCompleteSession = async (req: Request, res: Response) => {
     await visitor.updateDataObject(
       { [dataKey]: studyData },
       {
-        analytics: [{ analyticName: "studyStacksSessionComplete", profileId, uniqueKey: profileId, urlSlug }],
+        analytics: [{ analyticName: "completions", profileId, uniqueKey: profileId, urlSlug }],
         lock: { lockId, releaseLock: true },
       },
     );
@@ -98,16 +99,10 @@ export const handleCompleteSession = async (req: Request, res: Response) => {
       comebackTransitions: session.comebackTransitions,
     });
 
+    let updatedInventory = visitorInventory;
     if (newBadges.length > 0) {
-      const earned = { ...(studyData.earnedBadges || {}) };
-      for (const b of newBadges) earned[b] = Date.now();
-      studyData.earnedBadges = earned;
-      await visitor
-        .updateDataObject(
-          { [`${dataKey}.earnedBadges`]: earned },
-          { lock: { lockId: `${dataKey}-badges-${Date.now()}`, releaseLock: true } },
-        )
-        .catch((err: any) => console.warn("Failed to persist earnedBadges", err));
+      await visitor.fetchInventoryItems();
+      updatedInventory = getVisitorBadges(visitor.inventoryItems);
     }
 
     const summary: SessionSummary = {
@@ -121,7 +116,7 @@ export const handleCompleteSession = async (req: Request, res: Response) => {
 
     deleteSession(sessionId);
 
-    return res.json({ success: true, summary, visitorStudyData: studyData });
+    return res.json({ success: true, summary, visitorStudyData: studyData, visitorInventory: updatedInventory });
   } catch (error) {
     return errorHandler({
       error,

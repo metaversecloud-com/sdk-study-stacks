@@ -1,4 +1,4 @@
-import { Card, CardMastery, Deck, DeckProgress, StudyMode } from "@shared/types/StudyStacksTypes.js";
+import { Card, CardMastery, Deck, DeckProgress, isCardComplete, StudyMode } from "@shared/types/StudyStacksTypes.js";
 
 export const defaultMastery = (cardId: string): CardMastery => ({
   cardId,
@@ -43,7 +43,7 @@ export const computeNextCards = (
   sessionSize: number,
   now: number = Date.now(),
 ): ComputedCard[] => {
-  const cards = deck.cards.filter((c) => c.front.trim() && c.back.trim());
+  const cards = deck.cards.filter(isCardComplete);
   if (cards.length === 0) return [];
 
   let chosen: Card[];

@@ -25,14 +25,10 @@ export const handleGetDeck = async (req: Request, res: Response) => {
 
     const { visitor } = await getVisitor(credentials, true);
 
-    // Drafts: ecosystem drafts visible to admins only; user drafts visible to creator only.
-    if (deck.status !== "published") {
-      if (scope === "ecosystem" && !visitor.isAdmin) {
-        return res.status(404).json({ success: false, message: "Deck not found." });
-      }
-      if (scope === "user" && deck.createdByProfileId !== credentials.profileId) {
-        return res.status(404).json({ success: false, message: "Deck not found." });
-      }
+    // Ecosystem drafts are admin-only. User decks come from the caller's own
+    // data object, so their drafts are always the caller's to view.
+    if (deck.status !== "published" && scope === "ecosystem" && !visitor.isAdmin) {
+      return res.status(404).json({ success: false, message: "Deck not found." });
     }
 
     const visitorDataObject = (visitor.dataObject || {}) as Record<string, any>;

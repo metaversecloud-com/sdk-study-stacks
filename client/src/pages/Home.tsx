@@ -16,7 +16,7 @@ const xpForLevel = (cards: number) => {
   return { level, into, max: 100 };
 };
 
-const blankUserDeck = (profileId: string, displayName: string): Deck => ({
+const blankUserDeck = (): Deck => ({
   id: `d_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
   scope: "user",
   title: "",
@@ -25,8 +25,6 @@ const blankUserDeck = (profileId: string, displayName: string): Deck => ({
   difficulty: "medium",
   status: "draft",
   cards: [],
-  createdByProfileId: profileId,
-  createdByDisplayName: displayName || "Student",
   createdAt: Date.now(),
   updatedAt: Date.now(),
 });
@@ -39,7 +37,6 @@ export const Home = () => {
   const [searchParams] = useSearchParams();
   const forceRefreshInventory = searchParams.get("forceRefreshInventory") === "true";
   const displayName = searchParams.get("displayName") || searchParams.get("username") || "friend";
-  const profileId = searchParams.get("profileId") || "";
 
   const [isLoading, setIsLoading] = useState(true);
   const [tab, setTab] = useState<StudentTab>("library");
@@ -79,10 +76,11 @@ export const Home = () => {
   // const streak = visitorStudyData?.streak || { current: 0, longest: 0, lastDay: "" };
   const firstName = displayName.split(" ")[0];
 
-  // Anyone can edit a deck they created; admins can also edit any ecosystem
-  // deck (since the server-side gate is `isAdmin` for ecosystem scope).
+  // User decks are always the current visitor's own, so they're always
+  // editable; ecosystem decks are editable only by admins (matching the
+  // server-side `isAdmin` gate for ecosystem scope).
   const canEditStudyingDeck = Boolean(
-    studyingDeck && (studyingDeck.createdByProfileId === profileId || (studyingDeck.scope === "ecosystem" && isAdmin)),
+    studyingDeck && (studyingDeck.scope === "user" || (studyingDeck.scope === "ecosystem" && isAdmin)),
   );
 
   let content;
@@ -166,7 +164,7 @@ export const Home = () => {
           {tab === "library" && (
             <Library
               onPick={(deckId) => setStudyingDeckId(deckId)}
-              onCreate={() => setCreatingDeck(blankUserDeck(profileId, displayName))}
+              onCreate={() => setCreatingDeck(blankUserDeck())}
             />
           )}
           {tab === "progress" && <ProgressTab />}

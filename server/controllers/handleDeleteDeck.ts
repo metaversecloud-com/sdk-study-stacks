@@ -22,9 +22,9 @@ export const handleDeleteDeck = async (req: Request, res: Response) => {
     const existing = await findDeck(credentials, deckId, scope);
     if (!existing) return res.status(404).json({ success: false, message: "Deck not found." });
 
-    if (scope === "user" && existing.createdByProfileId && existing.createdByProfileId !== credentials.profileId) {
-      return res.status(403).json({ success: false, message: "You can only delete decks you created." });
-    }
+    // No per-deck owner check for user decks: they live in the calling
+    // visitor's own data object, so a user can only delete their own. The
+    // admin gate above covers ecosystem decks.
 
     await deleteDeck({ credentials, scope, deckId });
     return res.json({ success: true });

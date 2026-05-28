@@ -47,7 +47,6 @@ jest.mock("@utils/index.js", () => ({
     },
     totalCardsStudied: raw?.totalCardsStudied ?? 0,
     totalSessionsCompleted: raw?.totalSessionsCompleted ?? 0,
-    earnedBadges: raw?.earnedBadges ?? {},
   })),
   fetchEcosystemDecks: jest.fn(),
   fetchUserDecks: jest.fn(),
@@ -103,7 +102,6 @@ describe("GET /config", () => {
         title: "My deck",
         status: "draft",
         cards: [],
-        createdByProfileId: "profile-1",
       },
     });
 
@@ -198,17 +196,22 @@ describe("POST /decks", () => {
     expect(res.body.deck.scope).toBe("ecosystem");
   });
 
-  test("user cannot edit a user deck they didn't create", async () => {
+  test("non-admin can save their own user deck", async () => {
     mockUtils.getVisitor.mockResolvedValue({ visitor: { isAdmin: false }, visitorInventory: {} });
     mockUtils.fetchUserDecks.mockResolvedValue({
-      u1: { id: "u1", scope: "user", title: "Other person's deck", createdByProfileId: "other-profile" },
+      u1: { id: "u1", scope: "user", title: "My deck", status: "draft", cards: [] },
+    });
+    mockUtils.buildDeckFromInput.mockReturnValue({
+      deck: { id: "u1", scope: "user", title: "My deck (edited)" } as any,
+      isNew: false,
     });
     const app = makeApp();
     const res = await request(app)
       .post("/api/decks")
       .query(baseCreds)
-      .send({ scope: "user", deck: { id: "u1", title: "Hijack" } });
-    expect(res.status).toBe(403);
+      .send({ scope: "user", deck: { id: "u1", title: "My deck (edited)" } });
+    expect(res.status).toBe(200);
+    expect(res.body.deck.scope).toBe("user");
   });
 
   test("propagates build validation errors", async () => {
@@ -234,7 +237,9 @@ describe("DELETE /decks/:deckId", () => {
     mockUtils.getVisitor.mockResolvedValue({ visitor: { isAdmin: true }, visitorInventory: {} });
     mockUtils.findDeck.mockResolvedValue({ id: "d1", scope: "ecosystem" });
     const app = makeApp();
-    const res = await request(app).delete("/api/decks/d1").query({ ...baseCreds, scope: "ecosystem" });
+    const res = await request(app)
+      .delete("/api/decks/d1")
+      .query({ ...baseCreds, scope: "ecosystem" });
     expect(res.status).toBe(200);
     expect(mockUtils.deleteDeck).toHaveBeenCalled();
   });
@@ -242,32 +247,21 @@ describe("DELETE /decks/:deckId", () => {
   test("non-admin cannot delete an ecosystem deck", async () => {
     mockUtils.getVisitor.mockResolvedValue({ visitor: { isAdmin: false }, visitorInventory: {} });
     const app = makeApp();
-    const res = await request(app).delete("/api/decks/d1").query({ ...baseCreds, scope: "ecosystem" });
+    const res = await request(app)
+      .delete("/api/decks/d1")
+      .query({ ...baseCreds, scope: "ecosystem" });
     expect(res.status).toBe(403);
   });
 
   test("user can delete their own user deck", async () => {
     mockUtils.getVisitor.mockResolvedValue({ visitor: { isAdmin: false }, visitorInventory: {} });
-    mockUtils.findDeck.mockResolvedValue({
-      id: "u1",
-      scope: "user",
-      createdByProfileId: "profile-1",
-    });
+    mockUtils.findDeck.mockResolvedValue({ id: "u1", scope: "user" });
     const app = makeApp();
-    const res = await request(app).delete("/api/decks/u1").query({ ...baseCreds, scope: "user" });
+    const res = await request(app)
+      .delete("/api/decks/u1")
+      .query({ ...baseCreds, scope: "user" });
     expect(res.status).toBe(200);
-  });
-
-  test("user cannot delete another user's deck", async () => {
-    mockUtils.getVisitor.mockResolvedValue({ visitor: { isAdmin: false }, visitorInventory: {} });
-    mockUtils.findDeck.mockResolvedValue({
-      id: "u1",
-      scope: "user",
-      createdByProfileId: "other-person",
-    });
-    const app = makeApp();
-    const res = await request(app).delete("/api/decks/u1").query({ ...baseCreds, scope: "user" });
-    expect(res.status).toBe(403);
+    expect(mockUtils.deleteDeck).toHaveBeenCalled();
   });
 });
 

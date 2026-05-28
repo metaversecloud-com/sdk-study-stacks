@@ -19,7 +19,6 @@ const makeData = (overrides: Partial<VisitorStudyData> = {}): VisitorStudyData =
   streak: { current: 0, longest: 0, lastDay: "" },
   totalCardsStudied: 0,
   totalSessionsCompleted: 0,
-  earnedBadges: {},
   ...overrides,
 });
 

@@ -19,6 +19,8 @@
   --ss-purple-dark: #7a5dd9;
   --ss-pink: #ff89c5;
   --ss-pink-dark: #e84198;
+  --ss-red: #ff6464;
+  --ss-red-dark: #e84141;
 
   /* Semantic */
   --ss-primary: var(--ss-electric-blue);
@@ -43,25 +45,31 @@
 
   /* Subject colors (per style guide categories) */
   --ss-subj-math: var(--ss-electric-blue);
-  --ss-subj-science: var(--ss-mint-dark);
+  --ss-subj-science: var(--ss-teal-dark);
   --ss-subj-history: var(--ss-coral);
   --ss-subj-ela: var(--ss-purple);
-  --ss-subj-language: var(--ss-teal);
+  --ss-subj-language: var(--ss-red-dark);
   --ss-subj-art: var(--ss-pink);
-  --ss-subj-other: #94a3b8; /* slate */
+  --ss-subj-other: var(--ss-yellow-dark);
 
   /* Gradients */
   --ss-grad-hero: linear-gradient(135deg, var(--ss-electric-blue-dark) 0%, var(--ss-electric-blue));
   --ss-grad-cosmos: linear-gradient(160deg, var(--ss-electric-blue) 0%, var(--ss-purple) 60%, var(--ss-pink) 100%);
-  --ss-grad-mint: linear-gradient(135deg, var(--ss-mint-dark) 0%, var(--ss-mint));
-  --ss-grad-coral: linear-gradient(135deg, var(--ss-coral-dark) 0%, var(--ss-coral) 100%);
-  --ss-grad-yellow: linear-gradient(135deg, var(--ss-yellow-dark) 0%, var(--ss-yellow) 100%);
-  --ss-grad-purple: linear-gradient(135deg, var(--ss-purple-dark) 0%, var(--ss-purple) 100%);
-  --ss-grad-pink: linear-gradient(135deg, var(--ss-pink-dark) 0%, var(--ss-pink) 100%);
+
+  --ss-grad-math: linear-gradient(135deg, var(--ss-electric-blue-dark) 0%, var(--ss-electric-blue));
+  --ss-grad-science: linear-gradient(135deg, var(--ss-teal-dark) 0%, var(--ss-teal));
+  --ss-grad-history: linear-gradient(135deg, var(--ss-coral-dark) 0%, var(--ss-coral) 100%);
+  --ss-grad-ela: linear-gradient(135deg, var(--ss-purple-dark) 0%, var(--ss-purple) 100%);
+  --ss-grad-language: linear-gradient(135deg, var(--ss-red-dark) 0%, var(--ss-red) 100%);
+  --ss-grad-art: linear-gradient(135deg, var(--ss-pink-dark) 0%, var(--ss-pink) 100%);
+  --ss-grad-other: linear-gradient(135deg, var(--ss-yellow-dark) 0%, var(--ss-yellow) 100%);
+
   --ss-grad-card-front: linear-gradient(160deg, #ffffff 0%, #f4f6ff 100%);
-  --ss-grad-card-back: linear-gradient(160deg, var(--ss-electric-blue) 0%, var(--ss-purple) 100%);
+  --ss-grad-card-back: linear-gradient(160deg, #94a3b8 0%, #667085 100%);
+  /* --ss-grad-card-back: linear-gradient(160deg, var(--ss-electric-blue) 0%, var(--ss-purple) 100%); */
 
   /* Shadows */
+  --ss-shadow: 0 1px 6px rgba(12, 15, 21, 0.4);
   --ss-shadow-sm: 0 2px 6px rgba(29, 36, 51, 0.06);
   --ss-shadow-card: 0 8px 22px rgba(74, 124, 255, 0.12), 0 2px 6px rgba(29, 36, 51, 0.05);
   --ss-shadow-pop: 0 16px 36px rgba(74, 124, 255, 0.22), 0 4px 10px rgba(29, 36, 51, 0.08);

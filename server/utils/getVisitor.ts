@@ -10,7 +10,6 @@ export const DEFAULT_VISITOR_STUDY_DATA = (): VisitorStudyData => ({
   streak: { current: 0, longest: 0, lastDay: "" },
   totalCardsStudied: 0,
   totalSessionsCompleted: 0,
-  earnedBadges: {},
 });
 
 /**
@@ -26,7 +25,6 @@ export const normalizeStudyData = (raw: any): VisitorStudyData => ({
   },
   totalCardsStudied: raw?.totalCardsStudied ?? 0,
   totalSessionsCompleted: raw?.totalSessionsCompleted ?? 0,
-  earnedBadges: raw?.earnedBadges ?? {},
 });
 
 /**

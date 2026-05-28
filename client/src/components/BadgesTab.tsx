@@ -4,7 +4,6 @@ import { GlobalStateContext } from "@/context/GlobalContext";
 
 export const BadgesTab = () => {
   const { badges, visitorInventory } = useContext(GlobalStateContext);
-  console.log("🚀 ~ BadgesTab.tsx:7 ~ badges:", badges);
 
   if (!badges || Object.keys(badges).length === 0) {
     return (
@@ -19,7 +18,7 @@ export const BadgesTab = () => {
 
   const allBadges = Object.values(badges);
   const earnedCount = allBadges.filter(
-    (b) => visitorInventory?.badges && Object.keys(visitorInventory.badges).includes(b.name),
+    (b) => visitorInventory && Object.keys(visitorInventory).includes(b.name),
   ).length;
 
   return (
@@ -33,7 +32,7 @@ export const BadgesTab = () => {
       <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
         {allBadges.map((badge) => {
           const { name, description, icon } = badge;
-          const hasBadge = visitorInventory?.badges && Object.keys(visitorInventory.badges).includes(name);
+          const hasBadge = visitorInventory && Object.keys(visitorInventory).includes(name);
           const style = { maxWidth: "100%", filter: "none", opacity: "1" };
           if (!hasBadge) {
             style.filter = "grayscale(1)";

@@ -34,15 +34,9 @@ export const handleSaveDeck = async (req: Request, res: Response) => {
     const incomingId = incoming.id ? String(incoming.id) : undefined;
     const existing = incomingId ? existingMap[incomingId] : undefined;
 
-    // Edit-auth: for user decks, only the creator can edit their own deck.
-    if (
-      scope === "user" &&
-      existing &&
-      existing.createdByProfileId &&
-      existing.createdByProfileId !== credentials.profileId
-    ) {
-      return res.status(403).json({ success: false, message: "You can only edit decks you created." });
-    }
+    // No per-deck owner check for user decks: they're fetched from the calling
+    // visitor's own data object, so a user can only ever edit their own. The
+    // admin gate above covers ecosystem decks.
 
     const { deck, validationError } = buildDeckFromInput({ credentials, scope, incoming, existing });
     if (validationError) return res.status(400).json({ success: false, message: validationError });

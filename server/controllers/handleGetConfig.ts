@@ -15,7 +15,6 @@ import { AssetResultsRow, Deck } from "@shared/types/StudyStacksTypes.js";
 export const handleGetConfig = async (req: Request, res: Response) => {
   try {
     const credentials = getCredentials(req.query);
-    const { profileId } = credentials;
     const forceRefreshInventory = req.query.forceRefreshInventory === "true";
 
     const { visitor, visitorInventory } = await getVisitor(credentials, true);
@@ -25,14 +24,11 @@ export const handleGetConfig = async (req: Request, res: Response) => {
 
     const [ecoMap, userMap] = await Promise.all([fetchEcosystemDecks(credentials), fetchUserDecks(credentials)]);
 
-    // Drafts:
-    //  - ecosystem drafts visible only to admins
-    //  - user drafts visible only to their creator (which is always `profileId` here
-    //    since we fetch the current visitor's user decks)
+    // Ecosystem drafts are visible only to admins. User decks all belong to
+    // the current visitor (they come from this visitor's own data object), so
+    // every one of them — draft or published — is theirs to see.
     const ecosystemDecks: Deck[] = Object.values(ecoMap).filter((d) => isAdmin || d.status === "published");
-    const userDecks: Deck[] = Object.values(userMap).filter(
-      (d) => d.createdByProfileId === profileId || d.status === "published",
-    );
+    const userDecks: Deck[] = Object.values(userMap);
 
     const visitorDataObject = (visitor.dataObject || {}) as Record<string, any>;
     const studyData = normalizeStudyData(visitorDataObject[STUDY_STACKS_DATA_KEY]);

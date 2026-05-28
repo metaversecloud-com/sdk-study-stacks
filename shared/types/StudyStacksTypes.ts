@@ -24,6 +24,14 @@ export interface Card {
   imageUrl?: string;
 }
 
+/**
+ * A card is complete when it has an answer (back) and *something* on the front
+ * — either prompt text or a front image URL. (The image alone can be the
+ * prompt, so front text is not independently required.)
+ */
+export const isCardComplete = (card: Pick<Card, "front" | "back" | "imageUrl">): boolean =>
+  Boolean((card.front.trim() || (card.imageUrl ?? "").trim()) && card.back.trim());
+
 export interface Deck {
   id: DeckId;
   scope: DeckScope;
@@ -33,8 +41,11 @@ export interface Deck {
   difficulty: "easy" | "medium" | "hard";
   status: "draft" | "published";
   cards: Card[];
-  createdByProfileId: string;
-  createdByDisplayName: string;
+  // Authorship is only tracked on ecosystem decks (shared across admins).
+  // User decks live in the owner's own visitor data object, so the creator
+  // is implicit and these are omitted.
+  createdByProfileId?: string;
+  createdByDisplayName?: string;
   createdAt: number;
   updatedAt: number;
 }
@@ -63,20 +74,19 @@ export interface VisitorStudyData {
   };
   totalCardsStudied: number;
   totalSessionsCompleted: number;
-  earnedBadges?: { [badgeName: string]: number };
 }
 
 export const STUDY_STACK_BADGES = {
-  FIRST_STEP: "FirstStep",
+  FIRST_STEP: "First Step",
   BOOKWORM: "Bookworm",
   SCHOLAR: "Scholar",
   MASTER: "Master",
-  DECK_DONE: "DeckDone",
+  DECK_DONE: "Deck Done",
   POLYGLOT: "Polyglot",
-  COMEBACK_KID: "ComebackKid",
+  COMEBACK_KID: "Comeback Kid",
   STREAKER: "Streaker",
   MARATHONER: "Marathoner",
-  SPEED_DEMON: "SpeedDemon",
+  SPEED_DEMON: "Speed Demon",
   PERFECTIONIST: "Perfectionist",
 } as const;
 

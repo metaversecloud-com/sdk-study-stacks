@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { FlipRating } from "@shared/types/StudyStacksTypes";
 import type { SessionCard } from "@/context/types";
+import { playAnswerSound, useClickOnce } from "@/utils";
 
 export const FlipCard = ({
   card,
@@ -19,12 +20,16 @@ export const FlipCard = ({
   const [showHint, setShowHint] = useState(false);
   const [celebrate, setCelebrate] = useState<"correct" | "wrong" | null>(null);
   const stageRef = useRef<HTMLDivElement>(null);
+  // Lock all rating buttons after the first pick so a rage-click can't fire
+  // multiple ratings during the 350ms flip-out animation; reset for each card.
+  const { disabled: rated, guard, reset: resetRated } = useClickOnce();
 
   useEffect(() => {
     setFlipped(false);
     setShowHint(false);
     setCelebrate(null);
-  }, [card.id]);
+    resetRated();
+  }, [card.id, resetRated]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -39,29 +44,13 @@ export const FlipCard = ({
     return () => window.removeEventListener("keydown", onKey);
   }, [flipped]);
 
-  const playChime = () => {
-    if (muted) return;
-    try {
-      const Ctx = (window.AudioContext || (window as any).webkitAudioContext) as typeof AudioContext;
-      const ctx = new Ctx();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.frequency.value = 880;
-      gain.gain.value = 0.06;
-      osc.connect(gain).connect(ctx.destination);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.12);
-    } catch {
-      /* no-op */
-    }
-  };
-
   const handleRate = (r: FlipRating) => {
     if (r === "got_it") {
       setCelebrate("correct");
-      playChime();
+      playAnswerSound("correct", muted);
     } else if (r === "missed") {
       setCelebrate("wrong");
+      playAnswerSound("incorrect", muted);
     } else {
       setCelebrate(null);
     }
@@ -70,7 +59,7 @@ export const FlipCard = ({
 
   return (
     <div>
-      <p className="p2 pb-2 text-center" style={{ color: "var(--ss-text-light)" }}>
+      <p className="p2 pb-2 text-center ss-text-light">
         Card {index + 1} of {total}
       </p>
 
@@ -106,9 +95,7 @@ export const FlipCard = ({
       {!flipped && card.hint && (
         <div className="ss-hint-row">
           {showHint ? (
-            <p className="p2" style={{ color: "var(--ss-text-light)" }}>
-              💡 {card.hint}
-            </p>
+            <p className="ss-text-light">💡 {card.hint}</p>
           ) : (
             <button
               type="button"
@@ -123,19 +110,29 @@ export const FlipCard = ({
       )}
 
       {!flipped ? (
-        <p className="p2 text-center pt-6" style={{ color: "var(--ss-text-light)" }}>
-          Tap the card or press space to flip.
-        </p>
+        <p className="p2 text-center pt-6 ss-text-light">Tap the card or press space to flip.</p>
       ) : (
         <div className="ss-rating-row" role="group" aria-label="Self-rate your recall">
-          <button className="ss-rating-btn ss-rating-btn--missed" onClick={() => handleRate("missed")}>
-            ✗ Missed
+          <button
+            className="ss-rating-btn ss-rating-btn--got-it"
+            onClick={guard(() => handleRate("got_it"))}
+            disabled={rated}
+          >
+            ✓ Got it
           </button>
-          <button className="ss-rating-btn ss-rating-btn--almost" onClick={() => handleRate("almost")}>
+          <button
+            className="ss-rating-btn ss-rating-btn--almost"
+            onClick={guard(() => handleRate("almost"))}
+            disabled={rated}
+          >
             ◐ Almost
           </button>
-          <button className="ss-rating-btn ss-rating-btn--got-it" onClick={() => handleRate("got_it")}>
-            ✓ Got it
+          <button
+            className="ss-rating-btn ss-rating-btn--missed"
+            onClick={guard(() => handleRate("missed"))}
+            disabled={rated}
+          >
+            ✗ Missed
           </button>
         </div>
       )}

@@ -34,6 +34,10 @@ export const Study = ({
   const [summary, setSummary] = useState<SessionSummary | null>(null);
   const [loading, setLoading] = useState(false);
   const sprintStartedRef = useRef<number>(0);
+  // In-flight answer saves. The UI advances optimistically without waiting for
+  // these; we only block on them at completion so the final summary/badges
+  // (computed server-side from accumulated answers) include every card.
+  const pendingAnswersRef = useRef<Promise<unknown>[]>([]);
   const [now, setNow] = useState<number>(Date.now());
 
   const startSession = async (mode: StudyMode) => {
@@ -84,19 +88,23 @@ export const Study = ({
     }
   }, [now, phase, session?.mode]);
 
-  const recordAnswer = async (payload: { cardId: string; isCorrect?: boolean; rating?: FlipRating }) => {
+  // Fire-and-forget: kick off the save and track it so completeSession can wait
+  // for it, but don't make the UI block on it before advancing.
+  const recordAnswer = (payload: { cardId: string; isCorrect?: boolean; rating?: FlipRating }) => {
     if (!session) return;
-    try {
-      await backendAPI.post("/session/answer", {
+    const promise = backendAPI
+      .post("/session/answer", {
         sessionId: session.sessionId,
         cardId: payload.cardId,
         mode: session.mode,
         rating: payload.rating,
         isCorrect: payload.isCorrect,
+      })
+      .catch((err) => setErrorMessage(dispatch, err as ErrorType))
+      .finally(() => {
+        pendingAnswersRef.current = pendingAnswersRef.current.filter((p) => p !== promise);
       });
-    } catch (err) {
-      setErrorMessage(dispatch, err as ErrorType);
-    }
+    pendingAnswersRef.current.push(promise);
   };
 
   const advance = (wasCorrect: boolean) => {
@@ -132,12 +140,14 @@ export const Study = ({
     if (!s) return;
     setLoading(true);
     try {
+      // Ensure every answer write has landed so the summary + badges include them.
+      if (pendingAnswersRef.current.length) await Promise.allSettled(pendingAnswersRef.current);
       const res = await backendAPI.post("/session/complete", { sessionId: s.sessionId });
       if (res.data?.success) {
         setSummary(res.data.summary);
         dispatch!({
           type: SET_VISITOR_DATA,
-          payload: { visitorStudyData: res.data.visitorStudyData },
+          payload: { visitorStudyData: res.data.visitorStudyData, visitorInventory: res.data.visitorInventory },
         });
         setPhase("ended");
       }
@@ -177,7 +187,9 @@ export const Study = ({
   if (!session) return null;
 
   const currentCard = session.cards[session.index];
-  if (!currentCard) {
+  // `loading` here means completeSession is in flight (e.g. "End session" was
+  // clicked) — show the same wrap-up state so it doesn't look frozen.
+  if (!currentCard || loading) {
     return (
       <div className="ss-empty-state">
         <p>Wrapping up…</p>
@@ -201,8 +213,8 @@ export const Study = ({
           index={session.index}
           total={session.cards.length}
           muted={muted}
-          onRate={async (rating) => {
-            await recordAnswer({ cardId: currentCard.id, rating });
+          onRate={(rating) => {
+            recordAnswer({ cardId: currentCard.id, rating });
             advance(rating === "got_it");
           }}
         />
@@ -215,8 +227,9 @@ export const Study = ({
           total={session.cards.length}
           trueFalseFallback={(currentCard.distractors?.length ?? 0) < 3}
           autoAdvance={session.mode === "sprint"}
-          onAnswer={async (isCorrect) => {
-            await recordAnswer({ cardId: currentCard.id, isCorrect });
+          muted={muted}
+          onAnswer={(isCorrect) => {
+            recordAnswer({ cardId: currentCard.id, isCorrect });
             advance(isCorrect);
           }}
         />

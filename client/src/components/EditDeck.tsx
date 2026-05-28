@@ -1,6 +1,6 @@
-import { useContext, useState } from "react";
+import { useContext, useRef, useState } from "react";
 import type { Card, Deck, DeckScope, Grade, Subject } from "@shared/types/StudyStacksTypes";
-import { MAX_CARDS_PER_DECK } from "@shared/types/StudyStacksTypes";
+import { isCardComplete, MAX_CARDS_PER_DECK } from "@shared/types/StudyStacksTypes";
 import { GlobalDispatchContext, GlobalStateContext } from "@context/GlobalContext";
 import { backendAPI, setErrorMessage } from "@/utils";
 import { ErrorType, SET_DECKS } from "@/context/types";
@@ -32,6 +32,9 @@ export const EditDeck = ({ initial, onClose }: { initial: Deck; onClose: () => v
 
   const [deck, setDeck] = useState<Deck>(initial);
   const [saving, setSaving] = useState(false);
+  // Synchronous re-entry lock so a rage-click can't fire a second save before
+  // `saving` re-renders the buttons disabled.
+  const savingRef = useRef(false);
   const [confirmingCardRemoval, setConfirmingCardRemoval] = useState<number | null>(null);
   const [validationError, setValidationError] = useState<string>("");
   const [showImport, setShowImport] = useState(false);
@@ -98,9 +101,10 @@ export const EditDeck = ({ initial, onClose }: { initial: Deck; onClose: () => v
   const canPublish =
     deck.title.trim().length > 0 &&
     (!isEcosystemDeck || deck.grades.length > 0) &&
-    deck.cards.some((c) => c.front.trim() && c.back.trim());
+    deck.cards.some(isCardComplete);
 
   const persist = async (status: Deck["status"]) => {
+    if (savingRef.current) return;
     setValidationError("");
     if (!deck.title.trim()) {
       setValidationError("Title is required.");
@@ -109,11 +113,12 @@ export const EditDeck = ({ initial, onClose }: { initial: Deck; onClose: () => v
     if (status === "published" && !canPublish) {
       setValidationError(
         isEcosystemDeck
-          ? "Need a title, at least one grade, and one card with front + back to publish."
-          : "Need a title and one card with front + back to save.",
+          ? "Need a title, at least one grade, and one card with a front (text or image) and a back to publish."
+          : "Need a title and one card with a front (text or image) and a back to save.",
       );
       return;
     }
+    savingRef.current = true;
     setSaving(true);
     try {
       const res = await backendAPI.post("/decks", { scope: deck.scope, deck: { ...deck, status } });
@@ -131,6 +136,7 @@ export const EditDeck = ({ initial, onClose }: { initial: Deck; onClose: () => v
     } catch (err) {
       setErrorMessage(dispatch, err as ErrorType);
     } finally {
+      savingRef.current = false;
       setSaving(false);
     }
   };
@@ -260,10 +266,10 @@ export const EditDeck = ({ initial, onClose }: { initial: Deck; onClose: () => v
             <button type="button" className="btn btn-outline w-auto float-right" onClick={() => setShowImport(true)}>
               ⤴ Import
             </button>
+            <button type="button" className="btn" onClick={addCard} disabled={deck.cards.length >= MAX_CARDS_PER_DECK}>
+              + Add card
+            </button>
           </div>
-          <button type="button" className="btn" onClick={addCard} disabled={deck.cards.length >= MAX_CARDS_PER_DECK}>
-            + Add card
-          </button>
 
           {deck.cards.length === 0 ? (
             <p className="ss-empty-state">
@@ -322,7 +328,7 @@ export const EditDeck = ({ initial, onClose }: { initial: Deck; onClose: () => v
             Save
           </button>
         )}
-        <button className="btn btn-outline" onClick={onClose}>
+        <button className="btn btn-outline" onClick={onClose} disabled={saving}>
           Cancel
         </button>
       </div>

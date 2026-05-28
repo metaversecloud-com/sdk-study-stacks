@@ -47,16 +47,14 @@ Study Stacks uses the dropped asset that triggered the iframe as the "key asset"
 The app calls `Ecosystem.grantInventoryItem` with the exact `name` strings below. Provision a BADGE item for each one to enable that badge. If a badge isn't provisioned, the eligibility check still runs but the grant is a no-op (logged warning) — students simply won't see that badge in the catalog until it's provisioned.
 
 | Unique name (placeholder) | Title         | Trigger                                                      |
-| ------------------------- | ------------- | ------------------------------------------------------------ |
+| ------------------------- | ------------- | ------------------------------------------------------------ | --- |
 | `FirstStep`               | First Step    | Complete your first session.                                 |
 | `Bookworm`                | Bookworm      | 50 cards studied lifetime.                                   |
 | `Scholar`                 | Scholar       | 250 cards studied lifetime.                                  |
 | `Master`                  | Master        | 1,000 cards studied lifetime.                                |
 | `DeckDone`                | Deck Done     | Reach mastery 5 on every card in any deck.                   |
 | `Polyglot`                | Polyglot      | Earn Deck Done on decks in 3 different subjects.             |
-| `ComebackKid`             | Comeback Kid  | Move a card from mastery 0 or 1 to mastery 5 in one session. |
-| `Streaker`                | Streaker      | Reach a 7-day streak.                                        |
-| `Marathoner`              | Marathoner    | Reach a 30-day streak.                                       |
+| `ComebackKid`             | Comeback Kid  | Move a card from mastery 0 or 1 to mastery 5 in one session. |     |
 | `SpeedDemon`              | Speed Demon   | Score 20+ correct in one Sprint session.                     |
 | `Perfectionist`           | Perfectionist | 100% accuracy on a Quiz session of 10+ cards.                |
 
@@ -78,17 +76,12 @@ A `Deck` has `id`, `title`, `subject`, `grades`, `difficulty`, `status` ("draft"
 
 #### Visitor / User
 
-Per-app per-asset state lives under `${urlSlug}-${sceneDropId}` to mirror the trivia / scavenger-hunt convention:
-
 ```ts
 {
-  [`${urlSlug}-${sceneDropId}`]: {
-    decks: { [deckId]: { cards: { [cardId]: CardMastery }, sessionsCompleted, lastStudiedAt } },
-    streak: { current, longest, lastDay },        // lastDay is YYYY-MM-DD in UTC
-    totalCardsStudied: number,
-    totalSessionsCompleted: number,
-    earnedBadges: { [badgeName]: timestamp },
-  }
+  decks: { [deckId]: { cards: { [cardId]: CardMastery }, sessionsCompleted, lastStudiedAt } },
+  streak: { current, longest, lastDay },        // lastDay is YYYY-MM-DD in UTC
+  totalCardsStudied: number,
+  totalSessionsCompleted: number,
 }
 ```
 
@@ -108,6 +101,56 @@ Not used. (The v1 simple-key-asset pattern doesn't need a world-level pointer.)
 ### Badge evaluation
 
 `server/utils/evaluateBadges.ts` is a pure function over `studyDataAfter` + the session result + the full decks map. It produces the set of badges the visitor newly qualifies for, then `awardBadge` grants each one idempotently (no-op if the visitor already owns it).
+
+### Mastery Mechanics
+
+#### 1\. The unit: per-card mastery (0–5)
+
+---
+
+Every card you study carries a mastery level from **0 to 5** ([MasteryLevel](vscode-webview://0s4ueo536ddmrc7afvu7l721el1sgkec3lagnjkqou5go1bf91hn/topia-sdk-apps/sdk-study-stacks/shared/types/StudyStacksTypes.ts) is typed 0|1|2|3|4|5). It changes each time you answer that card, in [handleAnswerCard.ts](vscode-webview://0s4ueo536ddmrc7afvu7l721el1sgkec3lagnjkqou5go1bf91hn/topia-sdk-apps/sdk-study-stacks/server/controllers/handleAnswerCard.ts), then is clamped back into 0–5:
+
+| Mode   | Result   | Mastery         |
+| ------ | -------- | --------------- |
+| Flip   | ✓ Got it | **+2**          |
+| Flip   | ◐ Almost | 0               |
+| Flip   | ✗ Missed | −1              |
+| Quiz   | correct  | **+1**          |
+| Quiz   | wrong    | −1              |
+| Sprint | correct  | **+1**          |
+| Sprint | wrong    | 0 (never drops) |
+
+newMastery = clamp(0, 5, prev + delta).
+
+**A card is "mastered" when its mastery hits 5.** Starting from 0, that takes:
+
+- **3** "Got it"s in Flip (0→2→4→5, the last +2 clamps at 5),
+- **5** correct answers in Quiz or Sprint.
+
+Wrong answers can knock a card back down (except Sprint, which only ever holds or raises).
+
+#### 2\. Deck-level "mastered"
+
+---
+
+This shows up in two distinct places:
+
+**a) The mastery % ring on each deck card** ([DeckCard.tsx](vscode-webview://0s4ueo536ddmrc7afvu7l721el1sgkec3lagnjkqou5go1bf91hn/topia-sdk-apps/sdk-study-stacks/client/src/components/DeckCard.tsx#L24-L31)) is an _average across all cards_:
+
+mastery% = (sum of every card's mastery) / (cardCount × 5) × 100 `
+
+So the ring reads 100% only when **every card is at level 5**. It's a continuous progress indicator, not a pass/fail flag.
+
+**b) "Fully mastered" for the Deck Done badge** ([evaluateBadges.ts](vscode-webview://0s4ueo536ddmrc7afvu7l721el1sgkec3lagnjkqou5go1bf91hn/topia-sdk-apps/sdk-study-stacks/server/utils/evaluateBadges.ts#L36-L45)) — the strict definition:
+
+> A deck is fully mastered when it has at least one card **and every card's mastery ≥ 5.**
+
+This is evaluated server-side at the end of each session ([handleCompleteSession.ts](vscode-webview://0s4ueo536ddmrc7afvu7l721el1sgkec3lagnjkqou5go1bf91hn/topia-sdk-apps/sdk-study-stacks/server/controllers/handleCompleteSession.ts)). When it's true:
+
+- you earn the **Deck Done** badge, and
+- if you've fully mastered decks across **3+ different subjects**, you also earn **Polyglot**.
+
+Both definitions agree: a deck is "mastered" ⟺ 100% ring ⟺ all cards at level 5.
 
 ## API Endpoints
 

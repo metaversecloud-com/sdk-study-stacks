@@ -1,5 +1,5 @@
 import { Credentials } from "../../types/index.js";
-import { Card, Deck, DeckScope, Grade, MAX_CARDS_PER_DECK, Subject } from "@shared/types/StudyStacksTypes.js";
+import { Card, Deck, DeckScope, Grade, isCardComplete, MAX_CARDS_PER_DECK, Subject } from "@shared/types/StudyStacksTypes.js";
 import { Ecosystem, Visitor } from "../topiaInit.js";
 import { standardizeError } from "../standardizeError.js";
 
@@ -81,13 +81,13 @@ export const buildDeckFromInput = ({ credentials, scope, incoming, existing }: S
     };
   }
   const cards: Card[] = rawCards.map((c, i) => sanitizeCard(c, i));
-  const hasValidCard = cards.some((c) => c.front.trim() && c.back.trim());
+  const hasValidCard = cards.some(isCardComplete);
 
   if (requestedStatus === "published" && !hasValidCard) {
     return {
       deck: {} as Deck,
       isNew: false,
-      validationError: "Cannot publish: deck needs at least one card with front and back.",
+      validationError: "Cannot publish: deck needs at least one card with a front (text or image) and a back.",
     };
   }
 
@@ -102,11 +102,17 @@ export const buildDeckFromInput = ({ credentials, scope, incoming, existing }: S
     difficulty,
     status: requestedStatus,
     cards,
-    createdByProfileId: existing?.createdByProfileId || profileId || "",
-    createdByDisplayName:
-      existing?.createdByDisplayName || displayName || (scope === "ecosystem" ? "Teacher" : "Student"),
     createdAt: existing?.createdAt || now,
     updatedAt: now,
+    // Authorship is only meaningful on ecosystem decks (shared across admins).
+    // User decks are owned implicitly by the visitor whose data object holds
+    // them, so we don't store a creator on them.
+    ...(scope === "ecosystem"
+      ? {
+          createdByProfileId: existing?.createdByProfileId || profileId || "",
+          createdByDisplayName: existing?.createdByDisplayName || displayName || "Teacher",
+        }
+      : {}),
   };
   return { deck, isNew };
 };

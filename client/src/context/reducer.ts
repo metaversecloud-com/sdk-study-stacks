@@ -39,13 +39,18 @@ const globalReducer = (state: InitialState, action: ActionType): InitialState =>
       };
 
     case SET_VISITOR_DATA:
-      return { ...state, visitorStudyData: payload?.visitorStudyData ?? state.visitorStudyData };
+      return {
+        ...state,
+        visitorStudyData: payload?.visitorStudyData ?? state.visitorStudyData,
+        visitorInventory: payload?.visitorInventory ?? state.visitorInventory,
+        error: "",
+      };
 
     case SET_SESSION:
-      return { ...state, session: payload?.session };
+      return { ...state, session: payload?.session, error: "" };
 
     case CLEAR_SESSION:
-      return { ...state, session: undefined };
+      return { ...state, session: undefined, error: "" };
 
     case SET_MUTED:
       return { ...state, muted: Boolean(payload?.muted) };
