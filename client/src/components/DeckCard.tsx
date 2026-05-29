@@ -2,13 +2,13 @@ import { Deck, Subject, VisitorStudyData } from "@shared/types/StudyStacksTypes"
 import MasteryRing from "./MasteryRing";
 
 const SUBJECT_ICON: { [key in Subject]: string } = {
-  math: "➕",
+  math: "🧮",
   ela: "📖",
   science: "🔬",
   history: "🏛️",
   language: "🗣️",
   art: "🎨",
-  other: "✨",
+  other: "🎯",
 };
 
 const SUBJECT_CLASS: { [key in Subject]: string } = {
@@ -42,12 +42,10 @@ const formatLastStudied = (ts?: number): string => {
 export const DeckCard = ({
   deck,
   studyData,
-  recommended,
   onClick,
 }: {
   deck: Deck;
   studyData?: VisitorStudyData;
-  recommended?: boolean;
   onClick: () => void;
 }) => {
   const pct = computeMasteryPct(deck, studyData);
@@ -57,11 +55,9 @@ export const DeckCard = ({
   return (
     <button
       type="button"
-      className={`ss-deck-card ${subjectClass}${recommended ? " ss-deck-card--recommended" : ""}`}
+      className={`ss-deck-card ${subjectClass}`}
       onClick={onClick}
-      aria-label={`${recommended ? "Recommended. " : ""}Study ${deck.title}. ${deck.cards.length} cards. Mastery ${Math.round(
-        pct,
-      )} percent.`}
+      aria-label={`Study ${deck.title}. ${deck.cards.length} cards. Mastery ${Math.round(pct)} percent.`}
     >
       <div className="ss-deck-card__header">
         <div className="ss-deck-card__header-row">
@@ -76,7 +72,8 @@ export const DeckCard = ({
       </div>
       <div className="ss-deck-card__body">
         <div className="ss-deck-card__meta">
-          {deck.subject} · {deck.cards.length} card{deck.cards.length === 1 ? "" : "s"} · {deck.difficulty}
+          {deck.subject} · {deck.cards.length} card{deck.cards.length === 1 ? "" : "s"} · {deck.difficulty}{" "}
+          {deck.grades && `· grades: ${deck.grades}`}
         </div>
         <div className="ss-deck-card__meta">{formatLastStudied(lastStudied)}</div>
         {deck.status === "draft" && (

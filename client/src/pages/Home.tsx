@@ -21,12 +21,10 @@ const blankUserDeck = (): Deck => ({
   scope: "user",
   title: "",
   subject: "other",
-  grades: ["K", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"],
   difficulty: "medium",
   status: "draft",
   cards: [],
-  createdAt: Date.now(),
-  updatedAt: Date.now(),
+  // User decks intentionally omit `grades` and `createdBy*` — see Deck type.
 });
 
 export const Home = () => {

@@ -1,5 +1,16 @@
 import { Credentials } from "../../types/index.js";
-import { Card, Deck, DeckScope, Grade, isCardComplete, MAX_CARDS_PER_DECK, Subject } from "@shared/types/StudyStacksTypes.js";
+import {
+  ALL_GRADES_SENTINEL,
+  Card,
+  Deck,
+  DeckGrades,
+  DeckScope,
+  Grade,
+  isCardComplete,
+  MAX_CARDS_PER_DECK,
+  normalizeGrades,
+  Subject,
+} from "@shared/types/StudyStacksTypes.js";
 import { Ecosystem, Visitor } from "../topiaInit.js";
 import { standardizeError } from "../standardizeError.js";
 
@@ -59,10 +70,26 @@ export const buildDeckFromInput = ({ credentials, scope, incoming, existing }: S
 
   const subject: Subject = VALID_SUBJECTS.includes(incoming.subject) ? incoming.subject : existing?.subject || "other";
 
-  const grades: Grade[] =
-    Array.isArray(incoming.grades) && incoming.grades.length > 0
-      ? (incoming.grades.map((g: any) => String(g)) as Grade[])
-      : existing?.grades || (["K", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"] as Grade[]);
+  // Grade targeting only applies to ecosystem decks; we don't compute it for
+  // user decks at all so it doesn't get written to the visitor data object.
+  //
+  // Incoming wire forms we accept (for both new and existing decks):
+  //   - `"all"`     → store the sentinel verbatim
+  //   - `Grade[]`   → store the subset; if it happens to contain every grade
+  //                   we collapse it to `"all"` via normalizeGrades to keep
+  //                   the stored payload small
+  // If nothing usable comes in, we fall back to the existing value (if any)
+  // or default new decks to `"all"`.
+  const resolveIncomingGrades = (): DeckGrades | undefined => {
+    if (scope !== "ecosystem") return undefined;
+    if (incoming.grades === ALL_GRADES_SENTINEL) return ALL_GRADES_SENTINEL;
+    if (Array.isArray(incoming.grades) && incoming.grades.length > 0) {
+      const arr = incoming.grades.map((g: any) => String(g)) as Grade[];
+      return normalizeGrades(arr);
+    }
+    return existing?.grades ?? ALL_GRADES_SENTINEL;
+  };
+  const grades = resolveIncomingGrades();
 
   const difficulty: Deck["difficulty"] = VALID_DIFFICULTIES.includes(incoming.difficulty)
     ? incoming.difficulty
@@ -91,22 +118,18 @@ export const buildDeckFromInput = ({ credentials, scope, incoming, existing }: S
     };
   }
 
-  const now = Date.now();
   const isNew = !existing;
   const deck: Deck = {
     id,
     scope,
     title,
     subject,
-    grades,
     difficulty,
     status: requestedStatus,
     cards,
-    createdAt: existing?.createdAt || now,
-    updatedAt: now,
-    // Authorship is only meaningful on ecosystem decks (shared across admins).
-    // User decks are owned implicitly by the visitor whose data object holds
-    // them, so we don't store a creator on them.
+    // Ecosystem-only fields. Omitted entirely from user decks so they don't
+    // bloat the visitor data object.
+    ...(grades ? { grades } : {}),
     ...(scope === "ecosystem"
       ? {
           createdByProfileId: existing?.createdByProfileId || profileId || "",

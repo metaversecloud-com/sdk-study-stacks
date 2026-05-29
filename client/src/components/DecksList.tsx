@@ -10,14 +10,12 @@ const blankEcosystemDeck = (createdByProfileId: string, createdByDisplayName: st
   scope: "ecosystem",
   title: "",
   subject: "other",
-  grades: ["K", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"],
+  grades: "all",
   difficulty: "medium",
   status: "draft",
   cards: [],
   createdByProfileId,
   createdByDisplayName: createdByDisplayName || "Teacher",
-  createdAt: Date.now(),
-  updatedAt: Date.now(),
 });
 
 export const DecksList = () => {
@@ -51,23 +49,8 @@ export const DecksList = () => {
       title: `${deck.title} (copy)`,
       status: "draft",
       cards: deck.cards.map((c) => ({ ...c, id: `c_${Date.now()}_${Math.random().toString(36).slice(2, 7)}` })),
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
     };
     setEditing(copy);
-  };
-
-  const togglePublish = async (deck: Deck) => {
-    try {
-      const nextStatus = deck.status === "published" ? "draft" : "published";
-      const res = await backendAPI.post("/decks", { scope: "ecosystem", deck: { ...deck, status: nextStatus } });
-      if (res.data?.success) {
-        const others = ecosystemDecks.filter((d) => d.id !== deck.id);
-        dispatch!({ type: SET_DECKS, payload: { ecosystemDecks: [...others, res.data.deck] } });
-      }
-    } catch (err) {
-      setErrorMessage(dispatch, err as ErrorType);
-    }
   };
 
   if (editing) {
@@ -94,10 +77,10 @@ export const DecksList = () => {
       ) : (
         <ul style={{ listStyle: "none", padding: 0 }}>
           {decks.map((d) => (
-            <li key={d.id} className="card ss-deck-row" style={{ marginBottom: "0.5rem" }}>
+            <li key={d.id} className="card ss-deck-row">
               <div className="ss-deck-row__info">
-                <div className="ss-deck-row__title">{d.title || "(untitled)"}</div>
-                <div className="p3" style={{ color: "var(--ss-text-dim)" }}>
+                <h4 className="ss-deck-row__title">{d.title || "(untitled)"}</h4>
+                <div style={{ color: "var(--ss-text-dim)" }}>
                   {d.subject} · {d.cards.length} cards ·{" "}
                   <span style={{ color: d.status === "published" ? "var(--ss-success-dark)" : "var(--ss-coral)" }}>
                     {d.status}
@@ -111,10 +94,10 @@ export const DecksList = () => {
                 <button className="btn btn-outline" onClick={() => handleDuplicate(d)}>
                   Duplicate
                 </button>
-                <button className="btn btn-outline" onClick={() => togglePublish(d)}>
+                {/* <button className="btn btn-outline" onClick={() => togglePublish(d)}>
                   {d.status === "published" ? "Unpublish" : "Publish"}
-                </button>
-                <button className="btn btn-danger-outline" onClick={() => setConfirmDelete(d)}>
+                </button> */}
+                <button className="btn btn-outline btn-danger-outline" onClick={() => setConfirmDelete(d)}>
                   Delete
                 </button>
               </div>

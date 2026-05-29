@@ -28,7 +28,8 @@ export const handleSaveDeck = async (req: Request, res: Response) => {
       return res.status(403).json({ success: false, message: "Only admins can save ecosystem decks." });
     }
 
-    // Look up existing deck (so we preserve createdAt/createdBy on edits)
+    // Look up existing deck so we preserve ecosystem-only metadata
+    // (createdBy*) across edits.
     const existingMap =
       scope === "ecosystem" ? await fetchEcosystemDecks(credentials) : await fetchUserDecks(credentials);
     const incomingId = incoming.id ? String(incoming.id) : undefined;

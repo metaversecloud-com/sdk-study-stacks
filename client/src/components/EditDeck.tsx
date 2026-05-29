@@ -1,6 +1,14 @@
 import { useContext, useRef, useState } from "react";
 import type { Card, Deck, DeckScope, Grade, Subject } from "@shared/types/StudyStacksTypes";
-import { isCardComplete, MAX_CARDS_PER_DECK } from "@shared/types/StudyStacksTypes";
+import {
+  ALL_GRADES,
+  ALL_GRADES_SENTINEL,
+  expandGrades,
+  isAllGrades,
+  isCardComplete,
+  MAX_CARDS_PER_DECK,
+  normalizeGrades,
+} from "@shared/types/StudyStacksTypes";
 import { GlobalDispatchContext, GlobalStateContext } from "@context/GlobalContext";
 import { backendAPI, setErrorMessage } from "@/utils";
 import { ErrorType, SET_DECKS } from "@/context/types";
@@ -15,8 +23,6 @@ const SUBJECTS: { value: Subject; label: string }[] = [
   { value: "art", label: "Art" },
   { value: "other", label: "Other" },
 ];
-
-const ALL_GRADES: Grade[] = ["K", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"];
 
 const DIFFICULTIES: Deck["difficulty"][] = ["easy", "medium", "hard"];
 
@@ -45,8 +51,12 @@ export const EditDeck = ({ initial, onClose }: { initial: Deck; onClose: () => v
 
   const toggleGrade = (g: Grade) => {
     setDeck((d) => {
-      const has = d.grades.includes(g);
-      return { ...d, grades: has ? d.grades.filter((x) => x !== g) : [...d.grades, g] };
+      // Expand the sentinel into a concrete list before toggling, then
+      // re-normalize so a full subset collapses back to "all" on its own.
+      const current = expandGrades(d.grades);
+      const has = current.includes(g);
+      const next = has ? current.filter((x) => x !== g) : [...current, g];
+      return { ...d, grades: normalizeGrades(next) };
     });
   };
 
@@ -85,7 +95,8 @@ export const EditDeck = ({ initial, onClose }: { initial: Deck; onClose: () => v
     setConfirmingCardRemoval(null);
   };
 
-  const allGradesSelected = deck.grades.length === ALL_GRADES.length;
+  const selectedGrades = expandGrades(deck.grades);
+  const allGradesSelected = isAllGrades(deck.grades);
 
   const isEcosystemDeck = deck.scope === "ecosystem";
 
@@ -100,7 +111,7 @@ export const EditDeck = ({ initial, onClose }: { initial: Deck; onClose: () => v
   // no audience to filter), so canPublish only enforces grades for ecosystem.
   const canPublish =
     deck.title.trim().length > 0 &&
-    (!isEcosystemDeck || deck.grades.length > 0) &&
+    (!isEcosystemDeck || selectedGrades.length > 0) &&
     deck.cards.some(isCardComplete);
 
   const persist = async (status: Deck["status"]) => {
@@ -185,21 +196,23 @@ export const EditDeck = ({ initial, onClose }: { initial: Deck; onClose: () => v
                 <input
                   type="checkbox"
                   checked={allGradesSelected}
-                  onChange={(e) => setDeck((d) => ({ ...d, grades: e.target.checked ? [...ALL_GRADES] : [] }))}
+                  onChange={(e) =>
+                    setDeck((d) => ({ ...d, grades: e.target.checked ? ALL_GRADES_SENTINEL : [] }))
+                  }
                 />
                 All grades
               </label>
-              {deck.grades.length === 0 && (
+              {selectedGrades.length === 0 && (
                 <p className="ss-field__error">Select at least one grade or check &quot;All&quot;.</p>
               )}
               {!allGradesSelected && (
                 <div
-                  className={`ss-grade-list${deck.grades.length === 0 ? " ss-grade-list--error" : ""}`}
+                  className={`ss-grade-list${selectedGrades.length === 0 ? " ss-grade-list--error" : ""}`}
                   role="group"
                   aria-label="Grade levels"
                 >
                   {ALL_GRADES.map((g) => {
-                    const selected = deck.grades.includes(g);
+                    const selected = selectedGrades.includes(g);
                     return (
                       <button
                         key={g}

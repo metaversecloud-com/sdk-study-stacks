@@ -33,8 +33,6 @@ const makeDeck = (id: string, subject: Deck["subject"], cardIds: string[]): Deck
   cards: cardIds.map((cid) => ({ id: cid, front: "f", back: "b" })),
   createdByProfileId: "p",
   createdByDisplayName: "T",
-  createdAt: 0,
-  updatedAt: 0,
 });
 
 const masteredProgress = (cardIds: string[]) => ({

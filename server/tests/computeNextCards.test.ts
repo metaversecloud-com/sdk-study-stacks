@@ -13,8 +13,6 @@ const makeDeck = (ids: string[]): Deck => ({
   cards: ids.map(makeCard),
   createdByProfileId: "p",
   createdByDisplayName: "Teacher",
-  createdAt: 0,
-  updatedAt: 0,
 });
 
 describe("recencyPenalty", () => {

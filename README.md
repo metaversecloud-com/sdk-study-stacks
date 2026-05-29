@@ -10,7 +10,7 @@ Study Stacks is a single-player learning loop with three study modes (Flip, Quiz
 
 ### Student experience
 
-- **Library tab** — published decks with per-deck mastery rings and a recommended deck pinned to the top.
+- **Library tab** — published decks with per-deck mastery rings.
 - **Three study modes**:
   - **Flip** — read the front, recall, tap to flip, self-rate (Got it / Almost / Missed).
   - **Quiz** — 4-button multiple choice; decks with < 4 cards fall back to True/False.

@@ -347,10 +347,6 @@ body.ss-body--other {
   outline: 3px solid var(--ss-primary);
   outline-offset: 3px;
 }
-.ss-deck-card--recommended {
-  outline: 3px solid var(--ss-yellow);
-  outline-offset: 2px;
-}
 
 /* Subject color modifiers */
 .ss-deck-card--math {
@@ -1049,13 +1045,12 @@ body.ss-body--other {
 .ss-deck-row {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
+  margin-bottom: 12px;
 }
 .ss-deck-row__info {
   min-width: 0;
-  flex: 1 1 200px;
 }
 .ss-deck-row__title {
   font-weight: 700;
@@ -1063,8 +1058,8 @@ body.ss-body--other {
   word-break: break-word;
 }
 .ss-deck-row__actions {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 0.4rem;
   flex: 0 1 auto;
 }
