@@ -71,9 +71,10 @@ export const QuizCard = ({
 
   return (
     <div>
-      <p className="p3 text-center" style={{ color: "var(--ss-text-dim)" }}>
+      <p className="p2 pb-2 text-center ss-text-light">
         Card {index + 1} of {total}
       </p>
+
       <div className="card ss-quiz-prompt">
         {card.imageUrl && <img className="ss-quiz-prompt__image" src={card.imageUrl} alt="" loading="lazy" />}
         <h3 className="h3" style={{ marginBottom: 0, overflowWrap: "anywhere", wordBreak: "break-word" }}>
@@ -81,7 +82,9 @@ export const QuizCard = ({
         </h3>
         {card.hint &&
           (showHint ? (
-            <p className="p3 mt-2" style={{ color: "var(--ss-text-dim)", overflowWrap: "anywhere" }}>💡 {card.hint}</p>
+            <p className="p3 mt-2" style={{ color: "var(--ss-text-dim)", overflowWrap: "anywhere" }}>
+              💡 {card.hint}
+            </p>
           ) : (
             <button
               type="button"
@@ -109,7 +112,7 @@ export const QuizCard = ({
               onClick={() => handlePick(opt)}
               disabled={Boolean(picked)}
             >
-              {("label" in opt && (opt as any).label) ? `${(opt as any).label}: ` : ""}
+              {"label" in opt && (opt as any).label ? `${(opt as any).label}: ` : ""}
               {opt.text}
             </button>
           );
@@ -119,9 +122,7 @@ export const QuizCard = ({
       {revealed && (
         <div
           className={`ss-quiz-feedback ${
-            options.find((o) => o.text === picked)?.isCorrect
-              ? "ss-quiz-feedback--correct"
-              : "ss-quiz-feedback--wrong"
+            options.find((o) => o.text === picked)?.isCorrect ? "ss-quiz-feedback--correct" : "ss-quiz-feedback--wrong"
           }`}
           role="status"
         >

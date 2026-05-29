@@ -26,7 +26,6 @@ const globalReducer = (state: InitialState, action: ActionType): InitialState =>
         visitorStudyData: payload?.visitorStudyData ?? state.visitorStudyData,
         badges: payload?.badges ?? state.badges,
         visitorInventory: payload?.visitorInventory ?? state.visitorInventory,
-        results: payload?.results ?? state.results,
         error: "",
       };
 

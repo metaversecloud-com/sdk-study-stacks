@@ -6,7 +6,6 @@ import {
   StudyMode,
   VisitorBadgeRecord,
   VisitorStudyData,
-  AssetResultsRow,
 } from "@shared/types/StudyStacksTypes";
 
 export const SET_HAS_INTERACTIVE_PARAMS = "SET_HAS_INTERACTIVE_PARAMS";
@@ -67,7 +66,6 @@ export interface InitialState {
   visitorStudyData?: VisitorStudyData;
   badges: BadgeRecord;
   visitorInventory: VisitorBadgeRecord;
-  results?: { [profileId: string]: AssetResultsRow };
   session?: ActiveClientSession;
 }
 

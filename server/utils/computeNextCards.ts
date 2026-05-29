@@ -64,7 +64,26 @@ export const computeNextCards = (
   }
 
   return chosen.map((card) => {
-    const pool = cards.filter((c) => c.id !== card.id).map((c) => c.back);
+    // Build a distractor pool from other cards' `back` strings, deduped two
+    // ways to avoid the player ever seeing duplicate options:
+    //   1. Skip any sibling whose back matches the current card's correct
+    //      answer (case-insensitive, trimmed). Without this, a deck like
+    //      `"4+4" → "8"` and `"2+6" → "8"` would offer two visually
+    //      identical "8" options — clicking the distractor copy would be
+    //      marked wrong even though the text was correct.
+    //   2. Drop any later siblings that collide with each other so the
+    //      pool never contains two equivalent distractors either.
+    const normalize = (s: string) => s.trim().toLowerCase();
+    const correctNorm = normalize(card.back);
+    const seen = new Set<string>([correctNorm]);
+    const pool: string[] = [];
+    for (const c of cards) {
+      if (c.id === card.id) continue;
+      const n = normalize(c.back);
+      if (seen.has(n)) continue;
+      seen.add(n);
+      pool.push(c.back);
+    }
     const distractors = shuffle(pool).slice(0, 3);
     return { card, distractors };
   });

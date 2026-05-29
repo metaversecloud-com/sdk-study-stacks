@@ -14,9 +14,9 @@ import {
   getVisitorBadges,
   normalizeStudyData,
   STUDY_STACKS_DATA_KEY,
-  updateResultsRow,
+  updateDeckResult,
 } from "@utils/index.js";
-import { AssetResultsRow, SessionSummary, VisitorStudyData } from "@shared/types/StudyStacksTypes.js";
+import { SessionSummary, VisitorStudyData } from "@shared/types/StudyStacksTypes.js";
 
 export const handleCompleteSession = async (req: Request, res: Response) => {
   try {
@@ -68,22 +68,19 @@ export const handleCompleteSession = async (req: Request, res: Response) => {
       },
     );
 
-    // Update ecosystem-wide aggregate results
-    const mostStudiedDeckId = Object.entries(studyData.decks).sort(
-      ([, a], [, b]) => (b.sessionsCompleted || 0) - (a.sessionsCompleted || 0),
-    )[0]?.[0];
-
-    const resultsRow: AssetResultsRow = {
-      displayName: displayName || "Player",
-      totalSessions: studyData.totalSessionsCompleted,
-      mostStudiedDeckId,
-      currentStreak: studyData.streak.current,
-      lastSeenAt: Date.now(),
-    };
-
-    await updateResultsRow(credentials, profileId, resultsRow).catch((err: any) =>
-      console.warn("Failed to update aggregate results", err),
-    );
+    // Per-deck leaderboard write — ecosystem decks only. User decks are
+    // personal (live in the owner's visitor data object), so there's no
+    // audience to aggregate.
+    if (session.deckScope === "ecosystem") {
+      const deckSessions = progress.sessionsCompleted;
+      await updateDeckResult({
+        credentials,
+        deckId: session.deckId,
+        profileId,
+        displayName: displayName || "Player",
+        sessions: deckSessions,
+      }).catch((err: any) => console.warn("Failed to update deck results", err));
+    }
 
     // Evaluate and grant badges
     const newBadges = await evaluateBadges({

@@ -1,36 +1,37 @@
 import { Credentials } from "../types/index.js";
-import { AssetResultsRow, EcosystemDataObjectType } from "@shared/types/StudyStacksTypes.js";
+import { formatDeckResultsValue } from "@shared/types/StudyStacksTypes.js";
 import { Ecosystem } from "./topiaInit.js";
 import { standardizeError } from "./standardizeError.js";
 
 /**
- * Aggregate per-student results are ecosystem-wide (account-level) — shared
- * across every Study Stacks desk in every world, alongside ecosystem decks.
+ * Per-deck leaderboards (only for ecosystem decks). Each deck has a
+ * `results` map under it, keyed by `profileId`, valued as the standard
+ * pipe-delimited leaderboard string used elsewhere in the stack:
+ *
+ *   studyStacksDecks.{deckId}.results.{profileId} = "{displayName}|{sessions}"
+ *
+ * User decks have no leaderboard — they live in a single visitor's data
+ * object, so there's no audience to aggregate.
  */
 
-export const fetchResults = async (
-  credentials: Credentials,
-): Promise<{ [profileId: string]: AssetResultsRow }> => {
+export const updateDeckResult = async ({
+  credentials,
+  deckId,
+  profileId,
+  displayName,
+  sessions,
+}: {
+  credentials: Credentials;
+  deckId: string;
+  profileId: string;
+  displayName: string;
+  sessions: number;
+}): Promise<void> => {
   try {
     const ecosystem = await Ecosystem.create({ credentials });
-    const data = ((await ecosystem.fetchDataObject()) as EcosystemDataObjectType) || {};
-    return data.studyStacksResults || {};
-  } catch (error) {
-    console.warn("fetchResults failed; returning empty.", error);
-    return {};
-  }
-};
-
-export const updateResultsRow = async (
-  credentials: Credentials,
-  profileId: string,
-  row: AssetResultsRow,
-): Promise<void> => {
-  try {
-    const ecosystem = await Ecosystem.create({ credentials });
-    const lockId = `studyStacksResults-${profileId}-${Math.round(Date.now() / 5000) * 5000}`;
+    const lockId = `studyStacksDeckResults-${deckId}-${profileId}-${Math.round(Date.now() / 5000) * 5000}`;
     await ecosystem.updateDataObject(
-      { [`studyStacksResults.${profileId}`]: row },
+      { [`studyStacksDecks.${deckId}.results.${profileId}`]: formatDeckResultsValue(displayName, sessions) },
       { lock: { lockId, releaseLock: true } },
     );
   } catch (error) {

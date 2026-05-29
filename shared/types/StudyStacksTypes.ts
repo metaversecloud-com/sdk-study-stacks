@@ -90,7 +90,35 @@ export interface Deck {
   // is implicit and these are omitted.
   createdByProfileId?: string;
   createdByDisplayName?: string;
+  // Per-deck leaderboard for ecosystem decks. Standard pipe-delimited
+  // leaderboard syntax used across the stack: `"{displayName}|{sessions}"`.
+  // User decks omit this field (a personal deck has one owner, no
+  // leaderboard).
+  results?: { [profileId: string]: string };
 }
+
+/**
+ * One parsed row from a deck's `results` map.
+ *   storage: `studyStacksDecks.{deckId}.results.{profileId} = "{name}|{n}"`
+ */
+export interface DeckResultsRow {
+  profileId: string;
+  displayName: string;
+  sessions: number;
+}
+
+/** `"Linda Jones|7"` → `{ displayName: "Linda Jones", sessions: 7 }`. */
+export const parseDeckResultsValue = (value: string): { displayName: string; sessions: number } => {
+  const pipe = value.indexOf("|");
+  if (pipe < 0) return { displayName: value, sessions: 0 };
+  const displayName = value.slice(0, pipe);
+  const sessions = parseInt(value.slice(pipe + 1), 10);
+  return { displayName, sessions: Number.isFinite(sessions) ? sessions : 0 };
+};
+
+/** Build a deck-results value. displayName must not contain `|`. */
+export const formatDeckResultsValue = (displayName: string, sessions: number): string =>
+  `${displayName.replace(/\|/g, "")}|${sessions}`;
 
 export interface CardMastery {
   cardId: CardId;
@@ -156,21 +184,13 @@ export interface VisitorBadgeRecord {
   };
 }
 
-export interface AssetResultsRow {
-  displayName: string;
-  totalSessions: number;
-  mostStudiedDeckId?: DeckId;
-  currentStreak: number;
-  lastSeenAt: number;
-}
-
 /**
- * Account-wide store. Everything in Study Stacks is ecosystem-scoped — decks
- * AND aggregate results live here, shared across every desk in every world.
+ * Account-wide store. Ecosystem decks live here; per-deck leaderboards live
+ * INSIDE each deck (`Deck.results`), so a single fetch of `studyStacksDecks`
+ * carries everything an admin needs.
  */
 export interface EcosystemDataObjectType {
   studyStacksDecks?: { [deckId: string]: Deck };
-  studyStacksResults?: { [profileId: string]: AssetResultsRow };
   [key: string]: unknown;
 }
 

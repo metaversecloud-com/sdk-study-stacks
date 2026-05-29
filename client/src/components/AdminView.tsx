@@ -1,25 +1,8 @@
-import { useState } from "react";
-import { DecksList, ResultsTable } from "@/components";
+import { DecksList } from "@/components";
 
-type AdminTab = "decks" | "results";
-
-export const AdminView = () => {
-  const [tab, setTab] = useState<AdminTab>("decks");
-
-  return (
-    <div>
-      <div className="ss-tab-bar" role="tablist" aria-label="Admin sections">
-        <button className="ss-tab" role="tab" aria-selected={tab === "decks"} onClick={() => setTab("decks")}>
-          Decks
-        </button>
-        <button className="ss-tab" role="tab" aria-selected={tab === "results"} onClick={() => setTab("results")}>
-          Results
-        </button>
-      </div>
-
-      <div role="tabpanel">{tab === "decks" ? <DecksList /> : <ResultsTable />}</div>
-    </div>
-  );
-};
+// Admin view used to have Decks / Results tabs. Results moved per-deck (each
+// deck row has a View Results icon button), so this collapses to just the
+// decks list.
+export const AdminView = () => <DecksList />;
 
 export default AdminView;

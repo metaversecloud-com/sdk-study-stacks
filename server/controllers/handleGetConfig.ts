@@ -2,7 +2,6 @@ import { Request, Response } from "express";
 import {
   errorHandler,
   fetchEcosystemDecks,
-  fetchResults,
   fetchUserDecks,
   getBadges,
   getCredentials,
@@ -10,7 +9,7 @@ import {
   normalizeStudyData,
   STUDY_STACKS_DATA_KEY,
 } from "@utils/index.js";
-import { AssetResultsRow, Deck } from "@shared/types/StudyStacksTypes.js";
+import { Deck } from "@shared/types/StudyStacksTypes.js";
 
 export const handleGetConfig = async (req: Request, res: Response) => {
   try {
@@ -27,15 +26,14 @@ export const handleGetConfig = async (req: Request, res: Response) => {
     // Ecosystem drafts are visible only to admins. User decks all belong to
     // the current visitor (they come from this visitor's own data object), so
     // every one of them — draft or published — is theirs to see.
+    //
+    // Per-deck `results` ride along on each ecosystem deck (admin-only) so
+    // a separate aggregate-results fetch is no longer needed.
     const ecosystemDecks: Deck[] = Object.values(ecoMap).filter((d) => isAdmin || d.status === "published");
     const userDecks: Deck[] = Object.values(userMap);
 
     const visitorDataObject = (visitor.dataObject || {}) as Record<string, any>;
     const studyData = normalizeStudyData(visitorDataObject[STUDY_STACKS_DATA_KEY]);
-
-    const results: { [profileId: string]: AssetResultsRow } | undefined = isAdmin
-      ? await fetchResults(credentials)
-      : undefined;
 
     return res.json({
       success: true,
@@ -45,7 +43,6 @@ export const handleGetConfig = async (req: Request, res: Response) => {
       badges,
       visitorInventory,
       isAdmin,
-      results,
     });
   } catch (error) {
     return errorHandler({

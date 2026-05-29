@@ -58,6 +58,56 @@ describe("computeNextCards", () => {
     }
   });
 
+  test("quiz distractors never duplicate the correct answer when siblings share back text", () => {
+    // Regression: two cards sharing the same answer used to surface that
+    // answer as both the correct option and a distractor.
+    const sharedBack: Card = { id: "math-1", front: "4+4", back: "8" };
+    const collidingSibling: Card = { id: "math-2", front: "2+6", back: "8" };
+    const otherSibling: Card = { id: "math-3", front: "10-3", back: "7" };
+    const wildcard: Card = { id: "math-4", front: "1+1", back: "2" };
+    const deck: Deck = {
+      id: "d1",
+      scope: "ecosystem",
+      title: "T",
+      subject: "math",
+      grades: ["5"],
+      difficulty: "easy",
+      status: "published",
+      cards: [sharedBack, collidingSibling, otherSibling, wildcard],
+      createdByProfileId: "p",
+      createdByDisplayName: "Teacher",
+    };
+
+    const result = computeNextCards(deck, undefined, "quiz", 4);
+    const targeted = result.find((r) => r.card.id === sharedBack.id);
+    expect(targeted).toBeDefined();
+    // Correct answer ("8") must not appear in distractors, even case-insensitive.
+    expect(targeted!.distractors).not.toEqual(expect.arrayContaining(["8"]));
+    expect(targeted!.distractors!.map((s) => s.toLowerCase())).not.toContain("8");
+    // And no two distractors should collide with each other.
+    const set = new Set(targeted!.distractors!.map((s) => s.trim().toLowerCase()));
+    expect(set.size).toBe(targeted!.distractors!.length);
+  });
+
+  test("distractor pool also dedupes among siblings sharing answers", () => {
+    // Three siblings answering "blue" should collapse to one entry in the pool.
+    const target: Card = { id: "t", front: "Q", back: "red" };
+    const dup1: Card = { id: "d1", front: "A", back: "Blue" };
+    const dup2: Card = { id: "d2", front: "B", back: "blue " };
+    const dup3: Card = { id: "d3", front: "C", back: "BLUE" };
+    const unique: Card = { id: "u", front: "D", back: "green" };
+    const deck: Deck = {
+      ...makeDeck(["x"]),
+      cards: [target, dup1, dup2, dup3, unique],
+    };
+    const result = computeNextCards(deck, undefined, "quiz", 5);
+    const targeted = result.find((r) => r.card.id === target.id);
+    const distractors = targeted!.distractors!.map((s) => s.trim().toLowerCase());
+    // At most one "blue" copy + at most one "green".
+    expect(distractors.filter((s) => s === "blue").length).toBeLessThanOrEqual(1);
+    expect(new Set(distractors).size).toBe(distractors.length);
+  });
+
   test("low-mastery cards bubble to top in flip mode", () => {
     const deck = makeDeck(["a", "b", "c"]);
     const progress: DeckProgress = {

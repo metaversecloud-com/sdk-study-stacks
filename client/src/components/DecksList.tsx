@@ -2,7 +2,7 @@ import { useContext, useState } from "react";
 import type { Deck } from "@shared/types/StudyStacksTypes";
 import { GlobalDispatchContext, GlobalStateContext } from "@context/GlobalContext";
 import { backendAPI, setErrorMessage } from "@/utils";
-import { ConfirmationModal, EditDeck } from "@/components";
+import { ConfirmationModal, DeckResultsModal, EditDeck } from "@/components";
 import { ErrorType, SET_DECKS } from "@/context/types";
 
 const blankEcosystemDeck = (createdByProfileId: string, createdByDisplayName: string): Deck => ({
@@ -18,10 +18,49 @@ const blankEcosystemDeck = (createdByProfileId: string, createdByDisplayName: st
   createdByDisplayName: createdByDisplayName || "Teacher",
 });
 
+const ICON = {
+  results: "https://sdk-style.s3.amazonaws.com/icons/preview.svg",
+  edit: "https://sdk-style.s3.amazonaws.com/icons/edit.svg",
+  copy: "https://sdk-style.s3.amazonaws.com/icons/copy.svg",
+  delete: "https://sdk-style.s3.amazonaws.com/icons/delete.svg",
+};
+
+/**
+ * Reusable icon button with hover tooltip. Matches the `.tooltip` /
+ * `.tooltip-content` pattern already used in BadgesTab + Home.
+ */
+const IconBtn = ({
+  label,
+  onClick,
+  children,
+  danger = false,
+}: {
+  label: string;
+  onClick: () => void;
+  children: React.ReactNode;
+  danger?: boolean;
+}) => (
+  <div className="tooltip">
+    <span className="p3 tooltip-content" style={{ whiteSpace: "nowrap" }}>
+      {label}
+    </span>
+    <button
+      type="button"
+      className={`btn btn-icon${danger ? " btn-danger-outline" : " btn-outline"}`}
+      onClick={onClick}
+      aria-label={label}
+      title={label}
+    >
+      {children}
+    </button>
+  </div>
+);
+
 export const DecksList = () => {
   const dispatch = useContext(GlobalDispatchContext);
   const { ecosystemDecks } = useContext(GlobalStateContext);
   const [editing, setEditing] = useState<Deck | null>(null);
+  const [viewingResults, setViewingResults] = useState<Deck | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<Deck | null>(null);
 
   // Admin tab manages ecosystem (class-wide) decks only — personal decks are
@@ -49,6 +88,8 @@ export const DecksList = () => {
       title: `${deck.title} (copy)`,
       status: "draft",
       cards: deck.cards.map((c) => ({ ...c, id: `c_${Date.now()}_${Math.random().toString(36).slice(2, 7)}` })),
+      // Don't carry over the source deck's leaderboard.
+      results: undefined,
     };
     setEditing(copy);
   };
@@ -68,9 +109,7 @@ export const DecksList = () => {
         </button>
       </div>
 
-      <p className="p3" style={{ color: "var(--ss-text-dim)" }}>
-        Class decks are visible to every student at every Study Stacks desk in this account.
-      </p>
+      <p className="p3">Class decks are visible to every student at every Study Stacks desk in this account.</p>
 
       {decks.length === 0 ? (
         <p className="ss-empty-state">No class decks yet. Create your first one.</p>
@@ -80,31 +119,33 @@ export const DecksList = () => {
             <li key={d.id} className="card ss-deck-row">
               <div className="ss-deck-row__info">
                 <h4 className="ss-deck-row__title">{d.title || "(untitled)"}</h4>
-                <div style={{ color: "var(--ss-text-dim)" }}>
+                <p className="p2 ss-text-dim">
                   {d.subject} · {d.cards.length} cards ·{" "}
                   <span style={{ color: d.status === "published" ? "var(--ss-success-dark)" : "var(--ss-coral)" }}>
                     {d.status}
                   </span>
-                </div>
+                </p>
               </div>
               <div className="ss-deck-row__actions">
-                <button className="btn btn-outline" onClick={() => setEditing(d)}>
-                  Edit
-                </button>
-                <button className="btn btn-outline" onClick={() => handleDuplicate(d)}>
-                  Duplicate
-                </button>
-                {/* <button className="btn btn-outline" onClick={() => togglePublish(d)}>
-                  {d.status === "published" ? "Unpublish" : "Publish"}
-                </button> */}
-                <button className="btn btn-outline btn-danger-outline" onClick={() => setConfirmDelete(d)}>
-                  Delete
-                </button>
+                <IconBtn label="View results" onClick={() => setViewingResults(d)}>
+                  <img src={ICON.results} alt="" aria-hidden="true" />
+                </IconBtn>
+                <IconBtn label="Edit deck" onClick={() => setEditing(d)}>
+                  <img src={ICON.edit} alt="" aria-hidden="true" />
+                </IconBtn>
+                <IconBtn label="Duplicate deck" onClick={() => handleDuplicate(d)}>
+                  <img src={ICON.copy} alt="" aria-hidden="true" />
+                </IconBtn>
+                <IconBtn label="Delete deck" onClick={() => setConfirmDelete(d)} danger>
+                  <img src={ICON.delete} alt="" aria-hidden="true" />
+                </IconBtn>
               </div>
             </li>
           ))}
         </ul>
       )}
+
+      {viewingResults && <DeckResultsModal deck={viewingResults} onClose={() => setViewingResults(null)} />}
 
       {confirmDelete && (
         <ConfirmationModal

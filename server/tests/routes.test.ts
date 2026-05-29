@@ -50,8 +50,7 @@ jest.mock("@utils/index.js", () => ({
   })),
   fetchEcosystemDecks: jest.fn(),
   fetchUserDecks: jest.fn(),
-  fetchResults: jest.fn(),
-  updateResultsRow: jest.fn(),
+  updateDeckResult: jest.fn(),
   findDeck: jest.fn(),
   buildDeckFromInput: jest.fn(),
   persistDeck: jest.fn(),
@@ -129,14 +128,10 @@ describe("GET /config", () => {
       d2: { id: "d2", scope: "ecosystem", status: "published", cards: [] },
     });
     mockUtils.fetchUserDecks.mockResolvedValue({});
-    mockUtils.fetchResults.mockResolvedValue({
-      p1: { displayName: "L", totalSessions: 1, currentStreak: 1, lastSeenAt: 0 },
-    });
 
     const app = makeApp();
     const res = await request(app).get("/api/config").query(baseCreds);
     expect(res.body.ecosystemDecks).toHaveLength(2);
-    expect(res.body.results).toBeDefined();
     expect(res.body.isAdmin).toBe(true);
   });
 });
@@ -391,7 +386,7 @@ describe("POST /session/complete", () => {
     });
     mockUtils.fetchEcosystemDecks.mockResolvedValue({});
     mockUtils.fetchUserDecks.mockResolvedValue({});
-    mockUtils.updateResultsRow.mockResolvedValue(undefined);
+    mockUtils.updateDeckResult.mockResolvedValue(undefined);
     mockUtils.getVisitor.mockResolvedValue({
       visitor: {
         isAdmin: false,

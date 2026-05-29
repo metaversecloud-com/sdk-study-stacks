@@ -1024,7 +1024,6 @@ body.ss-body--other {
 }
 .ss-results-table {
   width: 100%;
-  min-width: 520px;
   border-collapse: collapse;
   font-size: 0.95rem;
 }
@@ -1059,7 +1058,7 @@ body.ss-body--other {
 }
 .ss-deck-row__actions {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 0.4rem;
   flex: 0 1 auto;
 }
