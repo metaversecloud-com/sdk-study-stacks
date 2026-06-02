@@ -92,7 +92,7 @@ export const ModePicker = ({
       <div className={`modal ss-bg--${deck.subject}`}>
         <div className="modal-header text-left">
           <div>
-            <h2 id="ss-text-light">{deck.title}</h2>
+            <h2 className="ss-text-light">{deck.title}</h2>
             <p className="p2 ss-text-light" style={{ marginTop: 4 }}>
               {deck.cards.length} card{deck.cards.length === 1 ? "" : "s"} · {deck.difficulty}
             </p>
