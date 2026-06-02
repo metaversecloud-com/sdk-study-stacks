@@ -11,6 +11,7 @@ export * from "./EditDeck.js";
 export * from "./EndOfSession.js";
 export * from "./FlipCard.js";
 export * from "./ImportCardsModal.js";
+export * from "./IconButton.js";
 export * from "./Library.js";
 export * from "./Loading.js";
 export * from "./Mascot.js";

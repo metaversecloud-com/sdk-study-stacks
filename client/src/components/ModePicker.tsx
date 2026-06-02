@@ -1,15 +1,10 @@
 import { useContext, useEffect, useState } from "react";
 import { DeckType, StudyModeType } from "@shared/types/StudyStacksTypes";
-import { ConfirmationModal } from "@/components";
+import { ConfirmationModal, IconButton } from "@/components";
 import { GlobalDispatchContext, GlobalStateContext } from "@context/GlobalContext";
 import { ErrorType, SET_DECKS } from "@/context/types";
 import { backendAPI, setErrorMessage, useClickOnce } from "@/utils";
 
-/**
- * "Choose a study mode" picker rendered as a modal so it overlays the Library
- * instead of replacing the page. Portal-mounted to escape any parent
- * stacking context.
- */
 export const ModePicker = ({
   deck,
   onPick,
@@ -93,9 +88,21 @@ export const ModePicker = ({
         <div className="modal-header text-left">
           <div>
             <h2 className="ss-text-light">{deck.title}</h2>
-            <p className="p2 ss-text-light" style={{ marginTop: 4 }}>
-              {deck.cards.length} card{deck.cards.length === 1 ? "" : "s"} · {deck.difficulty}
-            </p>
+            <div className="flex gap-2 grid-cols-3">
+              <p className="p2 ss-text-light" style={{ marginTop: 4 }}>
+                {deck.cards.length} card{deck.cards.length === 1 ? "" : "s"} · {deck.difficulty}
+              </p>
+              {onEdit && (
+                <a className="cursor-pointer" onClick={guard(onEdit)}>
+                  <img src="https://sdk-style.s3.amazonaws.com/icons/edit.svg" alt="" aria-hidden="true" />
+                </a>
+              )}
+              {onDelete && (
+                <a className="cursor-pointer" onClick={() => setConfirmingDelete(true)}>
+                  <img src="https://sdk-style.s3.amazonaws.com/icons/delete.svg" alt="" aria-hidden="true" />
+                </a>
+              )}
+            </div>
           </div>
           <a className="pt-2 cursor-pointer" onClick={guard(onCancel)} aria-label="Close" title="Close">
             <img src="https://sdk-style.s3.amazonaws.com/icons/x.svg" alt="" aria-hidden="true" />
@@ -131,32 +138,6 @@ export const ModePicker = ({
             <div className="ss-mode-card__title">⚡ Sprint</div>
             <div className="ss-mode-card__desc">60-second timed challenge — go fast!</div>
           </button>
-        </div>
-        <div className="actions">
-          {onEdit && (
-            <button
-              type="button"
-              className="btn btn-outline"
-              onClick={guard(onEdit)}
-              disabled={busy}
-              aria-label="Edit deck"
-              title="Edit deck"
-            >
-              Edit
-            </button>
-          )}
-          {onDelete && (
-            <button
-              type="button"
-              className="btn btn-danger-outline"
-              onClick={() => setConfirmingDelete(true)}
-              disabled={busy}
-              aria-label="Delete deck"
-              title="Delete deck"
-            >
-              Delete
-            </button>
-          )}
         </div>
       </div>
     </div>

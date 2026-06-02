@@ -2,7 +2,7 @@ import { useContext, useState } from "react";
 import type { DeckType } from "@shared/types/StudyStacksTypes";
 import { GlobalDispatchContext, GlobalStateContext } from "@context/GlobalContext";
 import { backendAPI, setErrorMessage } from "@/utils";
-import { ConfirmationModal, DeckResultsModal, EditDeck } from "@/components";
+import { ConfirmationModal, DeckResultsModal, EditDeck, IconButton } from "@/components";
 import { ErrorType, SET_DECKS } from "@/context/types";
 
 const blankEcosystemDeck = (createdByProfileId: string, createdByDisplayName: string): DeckType => ({
@@ -24,33 +24,6 @@ const ICON = {
   copy: "https://sdk-style.s3.amazonaws.com/icons/copy.svg",
   delete: "https://sdk-style.s3.amazonaws.com/icons/delete.svg",
 };
-
-const IconBtn = ({
-  label,
-  onClick,
-  children,
-  danger = false,
-}: {
-  label: string;
-  onClick: () => void;
-  children: React.ReactNode;
-  danger?: boolean;
-}) => (
-  <div className="tooltip">
-    <span className="p3 tooltip-content" style={{ whiteSpace: "nowrap" }}>
-      {label}
-    </span>
-    <button
-      type="button"
-      className={`btn btn-icon${danger ? " btn-danger-outline" : " btn-outline"}`}
-      onClick={onClick}
-      aria-label={label}
-      title={label}
-    >
-      {children}
-    </button>
-  </div>
-);
 
 export const DecksList = () => {
   const dispatch = useContext(GlobalDispatchContext);
@@ -123,18 +96,18 @@ export const DecksList = () => {
                 </p>
               </div>
               <div className="ss-deck-row__actions">
-                <IconBtn label="Analytics" onClick={() => setViewingResults(d)}>
+                <IconButton label="Analytics" onClick={() => setViewingResults(d)}>
                   <img src={ICON.stats} alt="" aria-hidden="true" />
-                </IconBtn>
-                <IconBtn label="Edit" onClick={() => setEditing(d)}>
+                </IconButton>
+                <IconButton label="Edit" onClick={() => setEditing(d)}>
                   <img src={ICON.edit} alt="" aria-hidden="true" />
-                </IconBtn>
-                <IconBtn label="Duplicate" onClick={() => handleDuplicate(d)}>
+                </IconButton>
+                <IconButton label="Duplicate" onClick={() => handleDuplicate(d)}>
                   <img src={ICON.copy} alt="" aria-hidden="true" />
-                </IconBtn>
-                <IconBtn label="Delete" onClick={() => setConfirmDelete(d)} danger>
+                </IconButton>
+                <IconButton label="Delete" onClick={() => setConfirmDelete(d)} danger>
                   <img src={ICON.delete} alt="" aria-hidden="true" />
-                </IconBtn>
+                </IconButton>
               </div>
             </li>
           ))}
