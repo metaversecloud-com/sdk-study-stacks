@@ -19,16 +19,12 @@ const blankEcosystemDeck = (createdByProfileId: string, createdByDisplayName: st
 });
 
 const ICON = {
-  results: "https://sdk-style.s3.amazonaws.com/icons/preview.svg",
+  stats: "https://sdk-style.s3.amazonaws.com/icons/info.svg",
   edit: "https://sdk-style.s3.amazonaws.com/icons/edit.svg",
   copy: "https://sdk-style.s3.amazonaws.com/icons/copy.svg",
   delete: "https://sdk-style.s3.amazonaws.com/icons/delete.svg",
 };
 
-/**
- * Reusable icon button with hover tooltip. Matches the `.tooltip` /
- * `.tooltip-content` pattern already used in BadgesTab + Home.
- */
 const IconBtn = ({
   label,
   onClick,
@@ -127,16 +123,16 @@ export const DecksList = () => {
                 </p>
               </div>
               <div className="ss-deck-row__actions">
-                <IconBtn label="View results" onClick={() => setViewingResults(d)}>
-                  <img src={ICON.results} alt="" aria-hidden="true" />
+                <IconBtn label="Analytics" onClick={() => setViewingResults(d)}>
+                  <img src={ICON.stats} alt="" aria-hidden="true" />
                 </IconBtn>
-                <IconBtn label="Edit deck" onClick={() => setEditing(d)}>
+                <IconBtn label="Edit" onClick={() => setEditing(d)}>
                   <img src={ICON.edit} alt="" aria-hidden="true" />
                 </IconBtn>
-                <IconBtn label="Duplicate deck" onClick={() => handleDuplicate(d)}>
+                <IconBtn label="Duplicate" onClick={() => handleDuplicate(d)}>
                   <img src={ICON.copy} alt="" aria-hidden="true" />
                 </IconBtn>
-                <IconBtn label="Delete deck" onClick={() => setConfirmDelete(d)} danger>
+                <IconBtn label="Delete" onClick={() => setConfirmDelete(d)} danger>
                   <img src={ICON.delete} alt="" aria-hidden="true" />
                 </IconBtn>
               </div>
