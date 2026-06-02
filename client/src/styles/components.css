@@ -136,14 +136,6 @@ body.ss-body--other {
   text-shadow: var(--ss-shadow);
 }
 
-/* Mascot */
-.ss-mascot {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex: 0 0 auto;
-}
-
 /* Streak pill */
 .ss-streak-pill {
   display: inline-flex;

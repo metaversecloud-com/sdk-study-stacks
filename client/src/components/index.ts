@@ -10,7 +10,6 @@ export * from "./ImportCardsModal.js";
 export * from "./IconButton.js";
 export * from "./Library.js";
 export * from "./Loading.js";
-export * from "./Mascot.js";
 export * from "./MasteryRing.js";
 export * from "./SelectedDeckModal.js";
 export * from "./PageContainer.js";

@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 import { DeckType, StudyModeType } from "@shared/types/StudyStacksTypes";
-import { ConfirmationModal } from "@/components";
+import { ConfirmationModal, IconButton } from "@/components";
 import { GlobalDispatchContext, GlobalStateContext } from "@context/GlobalContext";
 import { ErrorType, SET_DECKS } from "@/context/types";
 import { backendAPI, setErrorMessage, useClickOnce } from "@/utils";
@@ -93,34 +93,17 @@ export const SelectedDeckModal = ({
         <div className="modal-header text-left">
           <div>
             <h2 className="ss-text-light">{deck.title}</h2>
-            <div className="flex gap-2 grid-cols-3">
-              <p className="p2 ss-text-light" style={{ marginTop: 4 }}>
-                {deck.cards.length} card{deck.cards.length === 1 ? "" : "s"} · {deck.difficulty}
-              </p>
+
+            <p className="p2 ss-text-light" style={{ marginTop: 4 }}>
+              {deck.cards.length} card{deck.cards.length === 1 ? "" : "s"} · {deck.difficulty}
+            </p>
+            <div className="flex gap-3 pt-2">
               {onViewAnalytics && (
-                <a
-                  className="cursor-pointer"
-                  onClick={onViewAnalytics}
-                  aria-label="View analytics"
-                  title="View analytics"
-                >
-                  <img src="https://sdk-style.s3.amazonaws.com/icons/info.svg" alt="" aria-hidden="true" />
-                </a>
+                <IconButton label="Analytics" icon="info" isTextBtn={true} onClick={onViewAnalytics} />
               )}
-              {onEdit && (
-                <a className="cursor-pointer" onClick={onEdit} aria-label="Edit deck" title="Edit deck">
-                  <img src="https://sdk-style.s3.amazonaws.com/icons/edit.svg" alt="" aria-hidden="true" />
-                </a>
-              )}
+              {onEdit && <IconButton label="Edit" icon="edit" isTextBtn={true} onClick={onEdit} />}
               {onDelete && (
-                <a
-                  className="cursor-pointer"
-                  onClick={() => setConfirmingDelete(true)}
-                  aria-label="Delete deck"
-                  title="Delete deck"
-                >
-                  <img src="https://sdk-style.s3.amazonaws.com/icons/delete.svg" alt="" aria-hidden="true" />
-                </a>
+                <IconButton label="Delete" icon="delete" isTextBtn={true} onClick={() => setConfirmingDelete(true)} />
               )}
             </div>
           </div>

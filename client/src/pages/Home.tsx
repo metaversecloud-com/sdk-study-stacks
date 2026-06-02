@@ -1,12 +1,14 @@
 import { useContext, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
-import { BadgesTab, EditDeck, Library, Mascot, SelectedDeckModal, PageContainer, ProgressTab } from "@/components";
+import { BadgesTab, EditDeck, Library, SelectedDeckModal, PageContainer, ProgressTab } from "@/components";
 import { GlobalDispatchContext, GlobalStateContext } from "@context/GlobalContext";
 import { ErrorType, SET_CONFIG, SET_MUTED } from "@/context/types";
 import { backendAPI, openResultsInNewTab, setErrorMessage } from "@/utils";
 import Study from "./Study";
 import type { DeckType, StudyModeType } from "@shared/types/StudyStacksTypes";
+
+import mascotBlue from "@/assets/mascot_blue.png";
 
 type StudentTab = "library" | "progress" | "badges";
 
@@ -127,9 +129,14 @@ export const Home = () => {
       <div className="ss-page ss-page-bg">
         <section className="ss-greeting" aria-label="Welcome">
           <div className="ss-greeting__text">
-            <span className="ss-mascot ss-mascot--lg">
-              <Mascot />
-            </span>
+            <img
+              src={mascotBlue}
+              width={80}
+              alt=""
+              aria-hidden="true"
+              draggable={false}
+              style={{ objectFit: "contain", display: "block" }}
+            />
             <div>
               <div className="flex justify-between">
                 <div>
