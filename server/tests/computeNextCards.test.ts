@@ -1,8 +1,8 @@
 import { computeNextCards, defaultMastery, priority, recencyPenalty } from "../utils/computeNextCards.js";
-import { Card, Deck, DeckProgress } from "@shared/types/StudyStacksTypes.js";
+import { CardType, DeckType, DeckProgressType } from "@shared/types/StudyStacksTypes.js";
 
-const makeCard = (id: string): Card => ({ id, front: `front ${id}`, back: `back ${id}` });
-const makeDeck = (ids: string[]): Deck => ({
+const makeCard = (id: string): CardType => ({ id, front: `front ${id}`, back: `back ${id}` });
+const makeDeck = (ids: string[]): DeckType => ({
   id: "d1",
   scope: "ecosystem",
   title: "T",
@@ -61,11 +61,11 @@ describe("computeNextCards", () => {
   test("quiz distractors never duplicate the correct answer when siblings share back text", () => {
     // Regression: two cards sharing the same answer used to surface that
     // answer as both the correct option and a distractor.
-    const sharedBack: Card = { id: "math-1", front: "4+4", back: "8" };
-    const collidingSibling: Card = { id: "math-2", front: "2+6", back: "8" };
-    const otherSibling: Card = { id: "math-3", front: "10-3", back: "7" };
-    const wildcard: Card = { id: "math-4", front: "1+1", back: "2" };
-    const deck: Deck = {
+    const sharedBack: CardType = { id: "math-1", front: "4+4", back: "8" };
+    const collidingSibling: CardType = { id: "math-2", front: "2+6", back: "8" };
+    const otherSibling: CardType = { id: "math-3", front: "10-3", back: "7" };
+    const wildcard: CardType = { id: "math-4", front: "1+1", back: "2" };
+    const deck: DeckType = {
       id: "d1",
       scope: "ecosystem",
       title: "T",
@@ -91,12 +91,12 @@ describe("computeNextCards", () => {
 
   test("distractor pool also dedupes among siblings sharing answers", () => {
     // Three siblings answering "blue" should collapse to one entry in the pool.
-    const target: Card = { id: "t", front: "Q", back: "red" };
-    const dup1: Card = { id: "d1", front: "A", back: "Blue" };
-    const dup2: Card = { id: "d2", front: "B", back: "blue " };
-    const dup3: Card = { id: "d3", front: "C", back: "BLUE" };
-    const unique: Card = { id: "u", front: "D", back: "green" };
-    const deck: Deck = {
+    const target: CardType = { id: "t", front: "Q", back: "red" };
+    const dup1: CardType = { id: "d1", front: "A", back: "Blue" };
+    const dup2: CardType = { id: "d2", front: "B", back: "blue " };
+    const dup3: CardType = { id: "d3", front: "C", back: "BLUE" };
+    const unique: CardType = { id: "u", front: "D", back: "green" };
+    const deck: DeckType = {
       ...makeDeck(["x"]),
       cards: [target, dup1, dup2, dup3, unique],
     };
@@ -110,7 +110,7 @@ describe("computeNextCards", () => {
 
   test("low-mastery cards bubble to top in flip mode", () => {
     const deck = makeDeck(["a", "b", "c"]);
-    const progress: DeckProgress = {
+    const progress: DeckProgressType = {
       deckId: "d1",
       cards: {
         a: { cardId: "a", mastery: 5, lastSeenAt: Date.now(), timesCorrect: 5, timesWrong: 0 },

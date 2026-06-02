@@ -1,5 +1,5 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
-import type { Card } from "@shared/types/StudyStacksTypes";
+import type { CardType } from "@shared/types/StudyStacksTypes";
 import { copyCardsTemplate, parseCardsImport } from "@/utils";
 
 type ImportMode = "append" | "replace";
@@ -10,7 +10,7 @@ export const ImportCardsModal = ({
   onCancel,
 }: {
   existingCount: number;
-  onConfirm: (cards: Card[], mode: ImportMode) => void;
+  onConfirm: (cards: CardType[], mode: ImportMode) => void;
   onCancel: () => void;
 }) => {
   const titleId = useId();

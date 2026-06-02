@@ -1,7 +1,7 @@
-import { VisitorBadgeRecord } from "@shared/types/StudyStacksTypes.js";
+import { VisitorBadgeRecordType } from "@shared/types/StudyStacksTypes.js";
 
-export const getVisitorBadges = (visitorInventoryItems: any[]): VisitorBadgeRecord => {
-  const visitorInventory: VisitorBadgeRecord = {};
+export const getVisitorBadges = (visitorInventoryItems: any[]): VisitorBadgeRecordType => {
+  const visitorInventory: VisitorBadgeRecordType = {};
   for (const visitorItem of visitorInventoryItems || []) {
     const { id, status, item } = visitorItem;
     const { name, type, image_url = "" } = item || {};

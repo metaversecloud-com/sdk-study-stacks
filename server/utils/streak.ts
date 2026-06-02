@@ -1,4 +1,4 @@
-import { VisitorStudyData } from "@shared/types/StudyStacksTypes.js";
+import { VisitorStudyDataType } from "@shared/types/StudyStacksTypes.js";
 
 /**
  * Format a UTC timestamp as YYYY-MM-DD. We deliberately use UTC for stability;
@@ -25,7 +25,7 @@ const dayDiff = (a: string, b: string): number => {
  * streak. Same-day double-session is a no-op; consecutive day increments;
  * missed days reset to 1.
  */
-export const applyDailyStreak = (prev: VisitorStudyData["streak"], today: string): VisitorStudyData["streak"] => {
+export const applyDailyStreak = (prev: VisitorStudyDataType["streak"], today: string): VisitorStudyDataType["streak"] => {
   if (!prev || !prev.lastDay) {
     return { current: 1, longest: 1, lastDay: today };
   }

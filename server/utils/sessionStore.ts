@@ -1,12 +1,12 @@
-import { DeckScope, StudyMode } from "@shared/types/StudyStacksTypes.js";
+import { DeckScopeType, StudyModeType } from "@shared/types/StudyStacksTypes.js";
 
 export interface ActiveSession {
   sessionId: string;
   visitorId: number;
   assetId: string;
   deckId: string;
-  deckScope: DeckScope;
-  mode: StudyMode;
+  deckScope: DeckScopeType;
+  mode: StudyModeType;
   cardIds: string[];
   startedAt: number;
   // mastery transitions observed during session, used for Comeback Kid evaluation

@@ -1,5 +1,5 @@
 import { Credentials } from "../../types/index.js";
-import { Deck, EcosystemDataObjectType } from "@shared/types/StudyStacksTypes.js";
+import { DeckType, EcosystemDataObjectType } from "@shared/types/StudyStacksTypes.js";
 import { VisitorDataObjectType } from "@shared/types/VisitorData.js";
 import { Ecosystem, Visitor } from "../topiaInit.js";
 import { standardizeError } from "../standardizeError.js";
@@ -18,15 +18,15 @@ import { standardizeError } from "../standardizeError.js";
  * (sometimes longer, depending on SDK caching). Strip those before returning
  * so callers — and any `Object.values` that follow — never see null entries.
  */
-const pruneNullEntries = (map: Record<string, Deck | null | undefined>): Record<string, Deck> => {
-  const out: Record<string, Deck> = {};
+const pruneNullEntries = (map: Record<string, DeckType | null | undefined>): Record<string, DeckType> => {
+  const out: Record<string, DeckType> = {};
   for (const [id, deck] of Object.entries(map)) {
     if (deck && typeof deck === "object") out[id] = deck;
   }
   return out;
 };
 
-export const fetchEcosystemDecks = async (credentials: Credentials): Promise<Record<string, Deck>> => {
+export const fetchEcosystemDecks = async (credentials: Credentials): Promise<Record<string, DeckType>> => {
   try {
     const ecosystem = await Ecosystem.create({ credentials });
     const data = ((await ecosystem.fetchDataObject()) as EcosystemDataObjectType) || {};
@@ -48,12 +48,12 @@ export const fetchEcosystemDecks = async (credentials: Credentials): Promise<Rec
   }
 };
 
-export const fetchUserDecks = async (credentials: Credentials): Promise<Record<string, Deck>> => {
+export const fetchUserDecks = async (credentials: Credentials): Promise<Record<string, DeckType>> => {
   try {
     const { visitorId, urlSlug } = credentials;
     const visitor = await Visitor.create(visitorId, urlSlug, { credentials });
     const data = ((await visitor.fetchDataObject()) as VisitorDataObjectType) || {};
-    return pruneNullEntries((data.studyStacksDecks as Record<string, Deck | null | undefined>) || {});
+    return pruneNullEntries((data.studyStacksDecks as Record<string, DeckType | null | undefined>) || {});
   } catch (error) {
     throw standardizeError(error);
   }
@@ -63,7 +63,7 @@ export const findDeck = async (
   credentials: Credentials,
   deckId: string,
   scope: "ecosystem" | "user",
-): Promise<Deck | undefined> => {
+): Promise<DeckType | undefined> => {
   if (scope === "ecosystem") {
     const decks = await fetchEcosystemDecks(credentials);
     return decks[deckId];

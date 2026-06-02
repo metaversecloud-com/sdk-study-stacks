@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { Card } from "@shared/types/StudyStacksTypes";
+import type { CardType } from "@shared/types/StudyStacksTypes";
 
 export const CardEditor = ({
   card,
@@ -9,10 +9,10 @@ export const CardEditor = ({
   onDelete,
   onMove,
 }: {
-  card: Card;
+  card: CardType;
   index: number;
   total: number;
-  onChange: (next: Card) => void;
+  onChange: (next: CardType) => void;
   onDelete: () => void;
   onMove: (dir: -1 | 1) => void;
 }) => {

@@ -9,7 +9,7 @@ import {
   normalizeStudyData,
   STUDY_STACKS_DATA_KEY,
 } from "@utils/index.js";
-import { Deck } from "@shared/types/StudyStacksTypes.js";
+import { DeckType } from "@shared/types/StudyStacksTypes.js";
 
 export const handleGetConfig = async (req: Request, res: Response) => {
   try {
@@ -29,8 +29,8 @@ export const handleGetConfig = async (req: Request, res: Response) => {
     //
     // Per-deck `results` ride along on each ecosystem deck (admin-only) so
     // a separate aggregate-results fetch is no longer needed.
-    const ecosystemDecks: Deck[] = Object.values(ecoMap).filter((d) => isAdmin || d.status === "published");
-    const userDecks: Deck[] = Object.values(userMap);
+    const ecosystemDecks: DeckType[] = Object.values(ecoMap).filter((d) => isAdmin || d.status === "published");
+    const userDecks: DeckType[] = Object.values(userMap);
 
     const visitorDataObject = (visitor.dataObject || {}) as Record<string, any>;
     const studyData = normalizeStudyData(visitorDataObject[STUDY_STACKS_DATA_KEY]);

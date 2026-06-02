@@ -135,7 +135,7 @@ Wrong answers can knock a card back down (except Sprint, which only ever holds o
 
 This shows up in two distinct places:
 
-**a) The mastery % ring on each deck card** ([DeckCard.tsx](vscode-webview://0s4ueo536ddmrc7afvu7l721el1sgkec3lagnjkqou5go1bf91hn/topia-sdk-apps/sdk-study-stacks/client/src/components/DeckCard.tsx#L24-L31)) is an _average across all cards_:
+**a) The mastery % ring on each deck card** ([Deck.tsx](vscode-webview://0s4ueo536ddmrc7afvu7l721el1sgkec3lagnjkqou5go1bf91hn/topia-sdk-apps/sdk-study-stacks/client/src/components/Deck.tsx#L24-L31)) is an _average across all cards_:
 
 mastery% = (sum of every card's mastery) / (cardCount × 5) × 100 `
 

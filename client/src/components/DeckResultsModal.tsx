@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { createPortal } from "react-dom";
-import type { Deck, DeckResultsRow } from "@shared/types/StudyStacksTypes";
+import type { DeckType, DeckResultsRowType } from "@shared/types/StudyStacksTypes";
 import { parseDeckResultsValue } from "@shared/types/StudyStacksTypes";
 import { openResultsInNewTab } from "@/utils";
 
@@ -8,7 +8,7 @@ type SortKey = "name" | "sessions";
 
 const MAX_ROWS = 200;
 
-const parseResultsMap = (raw: Deck["results"]): DeckResultsRow[] => {
+const parseResultsMap = (raw: DeckType["results"]): DeckResultsRowType[] => {
   if (!raw) return [];
   return Object.entries(raw).map(([profileId, value]) => {
     const { displayName, sessions } = parseDeckResultsValue(value);
@@ -20,10 +20,10 @@ const parseResultsMap = (raw: Deck["results"]): DeckResultsRow[] => {
  * Per-deck leaderboard view. Reads from `deck.results` (the pipe-delimited
  * `displayName|sessions` map written by `handleCompleteSession`).
  */
-export const DeckResultsModal = ({ deck, onClose }: { deck: Deck; onClose: () => void }) => {
+export const DeckResultsModal = ({ deck, onClose }: { deck: DeckType; onClose: () => void }) => {
   const [sortKey, setSortKey] = useState<SortKey>("sessions");
 
-  const rows: DeckResultsRow[] = useMemo(() => {
+  const rows: DeckResultsRowType[] = useMemo(() => {
     const list = parseResultsMap(deck.results);
     list.sort((a, b) => {
       switch (sortKey) {

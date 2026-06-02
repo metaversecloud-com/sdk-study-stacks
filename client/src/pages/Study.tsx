@@ -1,5 +1,5 @@
 import { useContext, useEffect, useRef, useState } from "react";
-import type { Deck, FlipRating, StudyMode, SessionSummary } from "@shared/types/StudyStacksTypes";
+import type { DeckType, FlipRatingType, StudyModeType, SessionSummaryType } from "@shared/types/StudyStacksTypes";
 import { SPRINT_DURATION_MS } from "@shared/types/StudyStacksTypes";
 import { GlobalDispatchContext, GlobalStateContext } from "@context/GlobalContext";
 import {
@@ -11,27 +11,31 @@ import {
   SET_VISITOR_DATA,
 } from "@/context/types";
 import { backendAPI, setErrorMessage } from "@/utils";
-import { EndOfSession, FlipCard, ModePicker, QuizCard, SprintHUD, StreakRing } from "@/components";
+import { EndOfSession, FlipCard, QuizCard, SprintHUD, StreakRing } from "@/components";
 
-type Phase = "picking-mode" | "in-session" | "ended";
+// Mode is now picked at the Home level via `<ModePicker>` rendered as a
+// modal over the Library, so this page no longer owns a `picking-mode` phase.
+type Phase = "in-session" | "ended";
 
 export const Study = ({
   deck,
+  mode,
   onExit,
-  onEdit,
+  onChangeMode,
 }: {
-  deck: Deck;
+  deck: DeckType;
+  mode: StudyModeType;
   onExit: () => void;
-  /** Optional — when provided, the mode picker shows an Edit button so the
-   * deck's owner can jump straight into the editor. */
-  onEdit?: () => void;
+  /** Called from EndOfSession's "Study again" so Home can pop the mode
+   * picker back open (lets the player swap modes or restart). */
+  onChangeMode?: () => void;
 }) => {
   const dispatch = useContext(GlobalDispatchContext);
   const { muted, visitorStudyData } = useContext(GlobalStateContext);
 
-  const [phase, setPhase] = useState<Phase>("picking-mode");
+  const [phase, setPhase] = useState<Phase>("in-session");
   const [session, setSession] = useState<ActiveClientSession | null>(null);
-  const [summary, setSummary] = useState<SessionSummary | null>(null);
+  const [summary, setSummary] = useState<SessionSummaryType | null>(null);
   const [loading, setLoading] = useState(false);
   const sprintStartedRef = useRef<number>(0);
   // In-flight answer saves. The UI advances optimistically without waiting for
@@ -40,7 +44,7 @@ export const Study = ({
   const pendingAnswersRef = useRef<Promise<unknown>[]>([]);
   const [now, setNow] = useState<number>(Date.now());
 
-  const startSession = async (mode: StudyMode) => {
+  const startSession = async (mode: StudyModeType) => {
     setLoading(true);
     try {
       const res = await backendAPI.post("/session/start", {
@@ -90,7 +94,7 @@ export const Study = ({
 
   // Fire-and-forget: kick off the save and track it so completeSession can wait
   // for it, but don't make the UI block on it before advancing.
-  const recordAnswer = (payload: { cardId: string; isCorrect?: boolean; rating?: FlipRating }) => {
+  const recordAnswer = (payload: { cardId: string; isCorrect?: boolean; rating?: FlipRatingType }) => {
     if (!session) return;
     const promise = backendAPI
       .post("/session/answer", {
@@ -162,7 +166,11 @@ export const Study = ({
     setSummary(null);
     setSession(null);
     dispatch!({ type: CLEAR_SESSION });
-    setPhase("picking-mode");
+    // Bubble back to Home so it can re-open the mode-picker modal — that's
+    // where mode selection lives now. Falls back to a plain exit if the
+    // parent doesn't supply a handler.
+    if (onChangeMode) onChangeMode();
+    else onExit();
   };
 
   const handleExit = () => {
@@ -172,12 +180,19 @@ export const Study = ({
     onExit();
   };
 
+  // Mode is picked at the Home level before mounting Study, so kick off the
+  // first session as soon as the deck + mode are in hand. `startSession` is
+  // already defensive (dispatches errors), and the loading state below covers
+  // the in-flight window.
+  useEffect(() => {
+    if (session || loading) return;
+    startSession(mode);
+    // We intentionally only fire when the targeted (deck, mode) pair changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [deck.id, mode]);
+
   if (loading && !session) {
     return <p className="ss-empty-state">Starting session…</p>;
-  }
-
-  if (phase === "picking-mode") {
-    return <ModePicker deck={deck} onPick={startSession} onCancel={handleExit} onEdit={onEdit} />;
   }
 
   if (phase === "ended" && summary) {

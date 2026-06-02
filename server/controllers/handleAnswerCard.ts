@@ -8,14 +8,14 @@ import {
   normalizeStudyData,
   STUDY_STACKS_DATA_KEY,
 } from "@utils/index.js";
-import { CardMastery, DeckProgress, FlipRating, MasteryLevel, StudyMode } from "@shared/types/StudyStacksTypes.js";
+import { CardMasteryType, DeckProgressType, FlipRatingType, MasteryLevelType, StudyModeType } from "@shared/types/StudyStacksTypes.js";
 
-const clampMastery = (n: number): MasteryLevel => {
+const clampMastery = (n: number): MasteryLevelType => {
   const v = Math.max(0, Math.min(5, Math.round(n)));
-  return v as MasteryLevel;
+  return v as MasteryLevelType;
 };
 
-const masteryDeltaForFlip = (rating: FlipRating): number => {
+const masteryDeltaForFlip = (rating: FlipRatingType): number => {
   if (rating === "got_it") return 2;
   if (rating === "almost") return 0;
   return -1;
@@ -32,8 +32,8 @@ export const handleAnswerCard = async (req: Request, res: Response) => {
     const { sessionId, cardId, mode, rating, isCorrect } = req.body as {
       sessionId: string;
       cardId: string;
-      mode: StudyMode;
-      rating?: FlipRating;
+      mode: StudyModeType;
+      rating?: FlipRatingType;
       isCorrect?: boolean;
     };
     if (!sessionId || !cardId || !mode) {
@@ -54,14 +54,14 @@ export const handleAnswerCard = async (req: Request, res: Response) => {
     const visitorDataObject = (visitor.dataObject || {}) as Record<string, any>;
     const studyData = normalizeStudyData(visitorDataObject[dataKey]);
 
-    const progress: DeckProgress = studyData.decks[session.deckId] || {
+    const progress: DeckProgressType = studyData.decks[session.deckId] || {
       deckId: session.deckId,
       cards: {},
       sessionsCompleted: 0,
       lastStudiedAt: 0,
     };
 
-    const prev: CardMastery = progress.cards[cardId] || {
+    const prev: CardMasteryType = progress.cards[cardId] || {
       cardId,
       mastery: 0,
       lastSeenAt: 0,
@@ -92,7 +92,7 @@ export const handleAnswerCard = async (req: Request, res: Response) => {
     const newMasteryNum = prev.mastery + delta;
     const newMastery = clampMastery(newMasteryNum);
 
-    const updatedCard: CardMastery = {
+    const updatedCard: CardMasteryType = {
       cardId,
       mastery: newMastery,
       lastSeenAt: Date.now(),

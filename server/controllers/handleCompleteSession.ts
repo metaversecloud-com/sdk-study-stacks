@@ -16,7 +16,7 @@ import {
   STUDY_STACKS_DATA_KEY,
   updateDeckResult,
 } from "@utils/index.js";
-import { SessionSummary, VisitorStudyData } from "@shared/types/StudyStacksTypes.js";
+import { SessionSummaryType, VisitorStudyDataType } from "@shared/types/StudyStacksTypes.js";
 
 export const handleCompleteSession = async (req: Request, res: Response) => {
   try {
@@ -42,8 +42,8 @@ export const handleCompleteSession = async (req: Request, res: Response) => {
     const { visitor, visitorInventory } = await getVisitor(credentials, true);
     const dataKey = STUDY_STACKS_DATA_KEY;
     const visitorDataObject = (visitor.dataObject || {}) as Record<string, any>;
-    const studyDataBefore: VisitorStudyData = normalizeStudyData(visitorDataObject[dataKey]);
-    const studyData: VisitorStudyData = JSON.parse(JSON.stringify(studyDataBefore));
+    const studyDataBefore: VisitorStudyDataType = normalizeStudyData(visitorDataObject[dataKey]);
+    const studyData: VisitorStudyDataType = JSON.parse(JSON.stringify(studyDataBefore));
 
     const progress = studyData.decks[session.deckId] || {
       deckId: session.deckId,
@@ -102,7 +102,7 @@ export const handleCompleteSession = async (req: Request, res: Response) => {
       updatedInventory = getVisitorBadges(visitor.inventoryItems);
     }
 
-    const summary: SessionSummary = {
+    const summary: SessionSummaryType = {
       cardsStudied: session.totalAnswered,
       correctCount: session.correctCount,
       totalCardsInSession: session.cardIds.length,

@@ -4,7 +4,7 @@ export * from "./BadgesTab.js";
 export * from "./CardEditor.js";
 export * from "./Confetti.js";
 export * from "./ConfirmationModal.js";
-export * from "./DeckCard.js";
+export * from "./Deck.js";
 export * from "./DeckResultsModal.js";
 export * from "./DecksList.js";
 export * from "./EditDeck.js";

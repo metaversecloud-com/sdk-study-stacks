@@ -1,7 +1,7 @@
-import { Deck, Subject, VisitorStudyData } from "@shared/types/StudyStacksTypes";
+import { DeckType, SubjectType, VisitorStudyDataType } from "@shared/types/StudyStacksTypes";
 import MasteryRing from "./MasteryRing";
 
-const SUBJECT_ICON: { [key in Subject]: string } = {
+const SUBJECT_ICON: { [key in SubjectType]: string } = {
   math: "🧮",
   ela: "📖",
   science: "🔬",
@@ -11,7 +11,7 @@ const SUBJECT_ICON: { [key in Subject]: string } = {
   other: "🎯",
 };
 
-const SUBJECT_CLASS: { [key in Subject]: string } = {
+const SUBJECT_CLASS: { [key in SubjectType]: string } = {
   math: "ss-deck-card--math",
   ela: "ss-deck-card--ela",
   science: "ss-deck-card--science",
@@ -21,7 +21,7 @@ const SUBJECT_CLASS: { [key in Subject]: string } = {
   other: "ss-deck-card--other",
 };
 
-const computeMasteryPct = (deck: Deck, studyData?: VisitorStudyData): number => {
+const computeMasteryPct = (deck: DeckType, studyData?: VisitorStudyDataType): number => {
   if (deck.cards.length === 0) return 0;
   const progress = studyData?.decks?.[deck.id];
   if (!progress) return 0;
@@ -39,13 +39,13 @@ const formatLastStudied = (ts?: number): string => {
   return new Date(ts).toLocaleDateString();
 };
 
-export const DeckCard = ({
+export const Deck = ({
   deck,
   studyData,
   onClick,
 }: {
-  deck: Deck;
-  studyData?: VisitorStudyData;
+  deck: DeckType;
+  studyData?: VisitorStudyDataType;
   onClick: () => void;
 }) => {
   const pct = computeMasteryPct(deck, studyData);
@@ -86,4 +86,4 @@ export const DeckCard = ({
   );
 };
 
-export default DeckCard;
+export default Deck;

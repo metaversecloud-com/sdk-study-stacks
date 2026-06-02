@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import type { SessionSummary } from "@shared/types/StudyStacksTypes";
+import type { SessionSummaryType } from "@shared/types/StudyStacksTypes";
 import { GlobalStateContext } from "@context/GlobalContext";
 import { useClickOnce } from "@/utils";
 import Confetti from "./Confetti";
@@ -9,7 +9,7 @@ export const EndOfSession = ({
   onStudyAgain,
   onLibrary,
 }: {
-  summary: SessionSummary;
+  summary: SessionSummaryType;
   onStudyAgain: () => void;
   onLibrary: () => void;
 }) => {

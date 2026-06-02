@@ -9,9 +9,9 @@ import {
   normalizeStudyData,
   STUDY_STACKS_DATA_KEY,
 } from "@utils/index.js";
-import { DeckScope, FLIP_SESSION_SIZE, QUIZ_SESSION_SIZE, StudyMode } from "@shared/types/StudyStacksTypes.js";
+import { DeckScopeType, FLIP_SESSION_SIZE, QUIZ_SESSION_SIZE, StudyModeType } from "@shared/types/StudyStacksTypes.js";
 
-const SESSION_SIZE: { [mode in StudyMode]: number } = {
+const SESSION_SIZE: { [mode in StudyModeType]: number } = {
   flip: FLIP_SESSION_SIZE,
   quiz: QUIZ_SESSION_SIZE,
   sprint: 100,
@@ -23,8 +23,8 @@ export const handleStartSession = async (req: Request, res: Response) => {
     const { assetId, visitorId, profileId, urlSlug } = credentials;
 
     const deckId: string = req.body?.deckId;
-    const mode: StudyMode = req.body?.mode;
-    const scope: DeckScope = req.body?.scope;
+    const mode: StudyModeType = req.body?.mode;
+    const scope: DeckScopeType = req.body?.scope;
     if (!deckId) return res.status(400).json({ success: false, message: "deckId is required." });
     if (!["flip", "quiz", "sprint"].includes(mode)) {
       return res.status(400).json({ success: false, message: "Invalid mode." });

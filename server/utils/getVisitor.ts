@@ -2,10 +2,10 @@ import { VisitorInterface } from "@rtsdk/topia";
 import { Visitor } from "./topiaInit.js";
 import { Credentials } from "../types/index.js";
 import { standardizeError } from "./standardizeError.js";
-import { VisitorStudyData } from "@shared/types/StudyStacksTypes.js";
+import { VisitorStudyDataType } from "@shared/types/StudyStacksTypes.js";
 import { getVisitorBadges } from "./getVisitorBadges.js";
 
-export const DEFAULT_VISITOR_STUDY_DATA = (): VisitorStudyData => ({
+export const DEFAULT_VISITOR_STUDY_DATA = (): VisitorStudyDataType => ({
   decks: {},
   streak: { current: 0, longest: 0, lastDay: "" },
   totalCardsStudied: 0,
@@ -16,7 +16,7 @@ export const DEFAULT_VISITOR_STUDY_DATA = (): VisitorStudyData => ({
  * Coerce any shape (legacy `{ dateStarted }`, partial, undefined) into a fully
  * populated VisitorStudyData. Always safe to index — `decks`, `streak`, etc. exist.
  */
-export const normalizeStudyData = (raw: any): VisitorStudyData => ({
+export const normalizeStudyData = (raw: any): VisitorStudyDataType => ({
   decks: (raw && typeof raw === "object" && raw.decks) || {},
   streak: {
     current: raw?.streak?.current ?? 0,
@@ -62,7 +62,7 @@ export const getVisitor = async (credentials: Credentials, shouldGetVisitorDetai
       // Either undefined, legacy, or partial — merge defaults onto whatever's
       // there so we never destroy useful state but always end up with the full
       // VisitorStudyData shape.
-      const merged: VisitorStudyData = {
+      const merged: VisitorStudyDataType = {
         ...DEFAULT_VISITOR_STUDY_DATA(),
         ...(existing && typeof existing === "object" ? normalizeStudyData(existing) : {}),
       };

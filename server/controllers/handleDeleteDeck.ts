@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { deleteDeck, errorHandler, findDeck, getCredentials, getVisitor } from "@utils/index.js";
-import { DeckScope } from "@shared/types/StudyStacksTypes.js";
+import { DeckScopeType } from "@shared/types/StudyStacksTypes.js";
 
 export const handleDeleteDeck = async (req: Request, res: Response) => {
   try {
@@ -8,7 +8,7 @@ export const handleDeleteDeck = async (req: Request, res: Response) => {
     const { deckId } = req.params;
     if (!deckId) return res.status(400).json({ success: false, message: "deckId is required." });
 
-    const scope = (req.query.scope as DeckScope) || (req.body?.scope as DeckScope);
+    const scope = (req.query.scope as DeckScopeType) || (req.body?.scope as DeckScopeType);
     if (scope !== "user" && scope !== "ecosystem") {
       return res.status(400).json({ success: false, message: "Invalid scope." });
     }

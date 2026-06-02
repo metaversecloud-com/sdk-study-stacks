@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import type { FlipRating } from "@shared/types/StudyStacksTypes";
+import type { FlipRatingType } from "@shared/types/StudyStacksTypes";
 import type { SessionCard } from "@/context/types";
 import { playAnswerSound, useClickOnce } from "@/utils";
 
@@ -13,7 +13,7 @@ export const FlipCard = ({
   card: SessionCard;
   index: number;
   total: number;
-  onRate: (rating: FlipRating) => void;
+  onRate: (rating: FlipRatingType) => void;
   muted: boolean;
 }) => {
   const [flipped, setFlipped] = useState(false);
@@ -44,7 +44,7 @@ export const FlipCard = ({
     return () => window.removeEventListener("keydown", onKey);
   }, [flipped]);
 
-  const handleRate = (r: FlipRating) => {
+  const handleRate = (r: FlipRatingType) => {
     if (r === "got_it") {
       setCelebrate("correct");
       playAnswerSound("correct", muted);
@@ -60,7 +60,7 @@ export const FlipCard = ({
   return (
     <div>
       <p className="p2 pb-2 text-center ss-text-light">
-        Card {index + 1} of {total}
+        CardType {index + 1} of {total}
       </p>
 
       <div

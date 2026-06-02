@@ -1,4 +1,4 @@
-import { Deck, VisitorStudyData } from "./StudyStacksTypes.js";
+import { DeckType, VisitorStudyDataType } from "./StudyStacksTypes.js";
 
 /**
  * Visitor data object layout (all cross-world — nothing is scoped by
@@ -7,7 +7,7 @@ import { Deck, VisitorStudyData } from "./StudyStacksTypes.js";
  *  - `studyStacksDecks`: this visitor's personal (`scope: "user"`) deck library.
  */
 export interface VisitorDataObjectType {
-  studyStacksData?: VisitorStudyData;
-  studyStacksDecks?: { [deckId: string]: Deck };
-  [key: string]: VisitorStudyData | { [deckId: string]: Deck } | unknown;
+  studyStacksData?: VisitorStudyDataType;
+  studyStacksDecks?: { [deckId: string]: DeckType };
+  [key: string]: VisitorStudyDataType | { [deckId: string]: DeckType } | unknown;
 }

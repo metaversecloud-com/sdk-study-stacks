@@ -1,5 +1,5 @@
 import { useContext, useRef, useState } from "react";
-import type { Card, Deck, DeckScope, Grade, Subject } from "@shared/types/StudyStacksTypes";
+import type { CardType, DeckType, DeckScopeType, GradeType, SubjectType } from "@shared/types/StudyStacksTypes";
 import {
   ALL_GRADES,
   ALL_GRADES_SENTINEL,
@@ -14,7 +14,7 @@ import { backendAPI, setErrorMessage } from "@/utils";
 import { ErrorType, SET_DECKS } from "@/context/types";
 import { ConfirmationModal, CardEditor, ImportCardsModal } from "@/components";
 
-const SUBJECTS: { value: Subject; label: string }[] = [
+const SUBJECTS: { value: SubjectType; label: string }[] = [
   { value: "math", label: "Math" },
   { value: "ela", label: "English / Language Arts" },
   { value: "science", label: "Science" },
@@ -24,19 +24,19 @@ const SUBJECTS: { value: Subject; label: string }[] = [
   { value: "other", label: "Other" },
 ];
 
-const DIFFICULTIES: Deck["difficulty"][] = ["easy", "medium", "hard"];
+const DIFFICULTIES: DeckType["difficulty"][] = ["easy", "medium", "hard"];
 
-const blankCard = (): Card => ({
+const blankCard = (): CardType => ({
   id: `c_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
   front: "",
   back: "",
 });
 
-export const EditDeck = ({ initial, onClose }: { initial: Deck; onClose: () => void }) => {
+export const EditDeck = ({ initial, onClose }: { initial: DeckType; onClose: () => void }) => {
   const dispatch = useContext(GlobalDispatchContext);
   const { ecosystemDecks, userDecks, isAdmin } = useContext(GlobalStateContext);
 
-  const [deck, setDeck] = useState<Deck>(initial);
+  const [deck, setDeck] = useState<DeckType>(initial);
   const [saving, setSaving] = useState(false);
   // Synchronous re-entry lock so a rage-click can't fire a second save before
   // `saving` re-renders the buttons disabled.
@@ -45,11 +45,11 @@ export const EditDeck = ({ initial, onClose }: { initial: Deck; onClose: () => v
   const [validationError, setValidationError] = useState<string>("");
   const [showImport, setShowImport] = useState(false);
 
-  const updateField = <K extends keyof Deck>(key: K, value: Deck[K]) => {
+  const updateField = <K extends keyof DeckType>(key: K, value: DeckType[K]) => {
     setDeck((d) => ({ ...d, [key]: value }));
   };
 
-  const toggleGrade = (g: Grade) => {
+  const toggleGrade = (g: GradeType) => {
     setDeck((d) => {
       // Expand the sentinel into a concrete list before toggling, then
       // re-normalize so a full subset collapses back to "all" on its own.
@@ -60,7 +60,7 @@ export const EditDeck = ({ initial, onClose }: { initial: Deck; onClose: () => v
     });
   };
 
-  const setScope = (scope: DeckScope) => setDeck((d) => ({ ...d, scope }));
+  const setScope = (scope: DeckScopeType) => setDeck((d) => ({ ...d, scope }));
 
   const addCard = () => {
     if (deck.cards.length >= MAX_CARDS_PER_DECK) {
@@ -82,7 +82,7 @@ export const EditDeck = ({ initial, onClose }: { initial: Deck; onClose: () => v
     });
   };
 
-  const updateCard = (idx: number, next: Card) => {
+  const updateCard = (idx: number, next: CardType) => {
     setDeck((d) => {
       const cards = [...d.cards];
       cards[idx] = next;
@@ -112,11 +112,22 @@ export const EditDeck = ({ initial, onClose }: { initial: Deck; onClose: () => v
   const canPublish =
     deck.title.trim().length > 0 && (!isEcosystemDeck || selectedGrades.length > 0) && deck.cards.some(isCardComplete);
 
-  const persist = async (status: Deck["status"]) => {
+  const persist = async (status: DeckType["status"]) => {
     if (savingRef.current) return;
     setValidationError("");
     if (!deck.title.trim()) {
       setValidationError("Title is required.");
+      return;
+    }
+    if (deck.cards.length === 0) {
+      setValidationError("Add at least one card before saving.");
+      return;
+    }
+    const emptyCount = deck.cards.filter((c) => !isCardComplete(c)).length;
+    if (emptyCount > 0) {
+      setValidationError(
+        `${emptyCount} card${emptyCount === 1 ? " is" : "s are"} empty. Fill in a front (text or image) and a back, or remove ${emptyCount === 1 ? "it" : "them"} before saving.`,
+      );
       return;
     }
     if (status === "published" && !canPublish) {
@@ -132,7 +143,7 @@ export const EditDeck = ({ initial, onClose }: { initial: Deck; onClose: () => v
     try {
       const res = await backendAPI.post("/decks", { scope: deck.scope, deck: { ...deck, status } });
       if (res.data?.success) {
-        const updated: Deck = res.data.deck;
+        const updated: DeckType = res.data.deck;
         const targetList = updated.scope === "ecosystem" ? ecosystemDecks : userDecks;
         const others = targetList.filter((d) => d.id !== updated.id);
         const nextList = [...others, updated];
@@ -152,7 +163,7 @@ export const EditDeck = ({ initial, onClose }: { initial: Deck; onClose: () => v
 
   return (
     <div>
-      <div className="ss-header-row">
+      <div className="ss-header-row grid grid-cols-2">
         <h2 style={{ marginBottom: 0 }}>{initial.title ? `Edit: ${initial.title}` : "New deck"}</h2>
       </div>
 
@@ -171,13 +182,13 @@ export const EditDeck = ({ initial, onClose }: { initial: Deck; onClose: () => v
 
           <div className="mt-2">
             <label htmlFor="deck-subject" style={{ display: "block", fontWeight: 600 }}>
-              Subject
+              SubjectType
             </label>
             <select
               id="deck-subject"
               className="input"
               value={deck.subject}
-              onChange={(e) => updateField("subject", e.target.value as Subject)}
+              onChange={(e) => updateField("subject", e.target.value as SubjectType)}
             >
               {SUBJECTS.map((s) => (
                 <option key={s.value} value={s.value}>
@@ -189,7 +200,7 @@ export const EditDeck = ({ initial, onClose }: { initial: Deck; onClose: () => v
 
           {isEcosystemDeck && (
             <div className="mt-2">
-              <span className="ss-field__label">Grade levels</span>
+              <span className="ss-field__label">GradeType levels</span>
               <label className="ss-checkbox-row">
                 <input
                   type="checkbox"
@@ -234,7 +245,7 @@ export const EditDeck = ({ initial, onClose }: { initial: Deck; onClose: () => v
               id="deck-difficulty"
               className="input"
               value={deck.difficulty}
-              onChange={(e) => updateField("difficulty", e.target.value as Deck["difficulty"])}
+              onChange={(e) => updateField("difficulty", e.target.value as DeckType["difficulty"])}
             >
               {DIFFICULTIES.map((d) => (
                 <option key={d} value={d}>
@@ -317,7 +328,7 @@ export const EditDeck = ({ initial, onClose }: { initial: Deck; onClose: () => v
           <>
             {!isAlreadyPublished && (
               <button className="btn btn-outline" onClick={() => persist("draft")} disabled={saving}>
-                Save as draft
+                Save
               </button>
             )}
             <button
@@ -330,18 +341,20 @@ export const EditDeck = ({ initial, onClose }: { initial: Deck; onClose: () => v
             </button>
           </>
         ) : (
-          <button
-            className="btn"
-            onClick={() => persist("published")}
-            disabled={saving || !canPublish}
-            aria-disabled={saving || !canPublish}
-          >
-            Save
-          </button>
+          <>
+            <button className="btn btn-outline" onClick={onClose} disabled={saving}>
+              Cancel
+            </button>
+            <button
+              className="btn"
+              onClick={() => persist("published")}
+              disabled={saving || !canPublish}
+              aria-disabled={saving || !canPublish}
+            >
+              Save
+            </button>
+          </>
         )}
-        <button className="btn btn-outline" onClick={onClose} disabled={saving}>
-          Cancel
-        </button>
       </div>
 
       {confirmingCardRemoval !== null && (

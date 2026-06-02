@@ -1,11 +1,11 @@
-export type DeckId = string;
-export type CardId = string;
+export type DeckIdType = string;
+export type CardIdType = string;
 
-export type Subject = "math" | "ela" | "science" | "history" | "language" | "art" | "other";
-export type Grade = "K" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" | "10" | "11" | "12";
+export type SubjectType = "math" | "ela" | "science" | "history" | "language" | "art" | "other";
+export type GradeType = "K" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" | "10" | "11" | "12";
 
 /** Every grade we support, in display order. */
-export const ALL_GRADES: readonly Grade[] = [
+export const ALL_GRADES: readonly GradeType[] = [
   "K", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12",
 ];
 
@@ -25,38 +25,38 @@ export const ALL_GRADES_SENTINEL = "all" as const;
  * User decks omit this field entirely (no audience to target). The optional
  * marker lives on `Deck.grades` itself.
  */
-export type DeckGrades = typeof ALL_GRADES_SENTINEL | Grade[];
+export type DeckGradesType = typeof ALL_GRADES_SENTINEL | GradeType[];
 
 /** Resolve stored grades to the concrete list of targeted grades. */
-export const expandGrades = (grades: DeckGrades | undefined): Grade[] => {
+export const expandGrades = (grades: DeckGradesType | undefined): GradeType[] => {
   if (!grades) return [];
   if (grades === ALL_GRADES_SENTINEL) return [...ALL_GRADES];
   return grades;
 };
 
 /** Collapse a full grade array to the `"all"` sentinel; otherwise return the array. */
-export const normalizeGrades = (grades: Grade[]): DeckGrades => {
+export const normalizeGrades = (grades: GradeType[]): DeckGradesType => {
   if (grades.length === ALL_GRADES.length) return ALL_GRADES_SENTINEL;
   return grades;
 };
 
 /** Whether a stored grades value represents "every grade". */
-export const isAllGrades = (grades: DeckGrades | undefined): boolean =>
+export const isAllGrades = (grades: DeckGradesType | undefined): boolean =>
   grades === ALL_GRADES_SENTINEL || (Array.isArray(grades) && grades.length === ALL_GRADES.length);
 
-export type StudyMode = "flip" | "quiz" | "sprint";
-export type FlipRating = "got_it" | "almost" | "missed";
-export type MasteryLevel = 0 | 1 | 2 | 3 | 4 | 5;
+export type StudyModeType = "flip" | "quiz" | "sprint";
+export type FlipRatingType = "got_it" | "almost" | "missed";
+export type MasteryLevelType = 0 | 1 | 2 | 3 | 4 | 5;
 
 /**
  * A deck is either personal to one visitor (`"user"`) or shared across every
  * Study Stacks desk in the account (`"ecosystem"`). Only admins can write
  * ecosystem decks; anyone can create user decks for themselves.
  */
-export type DeckScope = "user" | "ecosystem";
+export type DeckScopeType = "user" | "ecosystem";
 
-export interface Card {
-  id: CardId;
+export interface CardType {
+  id: CardIdType;
   front: string;
   back: string;
   hint?: string;
@@ -69,22 +69,22 @@ export interface Card {
  * — either prompt text or a front image URL. (The image alone can be the
  * prompt, so front text is not independently required.)
  */
-export const isCardComplete = (card: Pick<Card, "front" | "back" | "imageUrl">): boolean =>
+export const isCardComplete = (card: Pick<CardType, "front" | "back" | "imageUrl">): boolean =>
   Boolean((card.front.trim() || (card.imageUrl ?? "").trim()) && card.back.trim());
 
-export interface Deck {
-  id: DeckId;
-  scope: DeckScope;
+export interface DeckType {
+  id: DeckIdType;
+  scope: DeckScopeType;
   title: string;
-  subject: Subject;
+  subject: SubjectType;
   difficulty: "easy" | "medium" | "hard";
   status: "draft" | "published";
-  cards: Card[];
+  cards: CardType[];
   // Grade targeting only applies to ecosystem decks (teacher → class
   // audience). User decks are personal, so this field is omitted on them.
   // Ecosystem decks store either `"all"` (every grade — the common case)
   // or an explicit `Grade[]` subset; see `DeckGrades`.
-  grades?: DeckGrades;
+  grades?: DeckGradesType;
   // Authorship is only tracked on ecosystem decks (shared across admins).
   // User decks live in the owner's own visitor data object, so the creator
   // is implicit and these are omitted.
@@ -101,7 +101,7 @@ export interface Deck {
  * One parsed row from a deck's `results` map.
  *   storage: `studyStacksDecks.{deckId}.results.{profileId} = "{name}|{n}"`
  */
-export interface DeckResultsRow {
+export interface DeckResultsRowType {
   profileId: string;
   displayName: string;
   sessions: number;
@@ -120,23 +120,23 @@ export const parseDeckResultsValue = (value: string): { displayName: string; ses
 export const formatDeckResultsValue = (displayName: string, sessions: number): string =>
   `${displayName.replace(/\|/g, "")}|${sessions}`;
 
-export interface CardMastery {
-  cardId: CardId;
-  mastery: MasteryLevel;
+export interface CardMasteryType {
+  cardId: CardIdType;
+  mastery: MasteryLevelType;
   lastSeenAt: number;
   timesCorrect: number;
   timesWrong: number;
 }
 
-export interface DeckProgress {
-  deckId: DeckId;
-  cards: { [cardId: string]: CardMastery };
+export interface DeckProgressType {
+  deckId: DeckIdType;
+  cards: { [cardId: string]: CardMasteryType };
   sessionsCompleted: number;
   lastStudiedAt: number;
 }
 
-export interface VisitorStudyData {
-  decks: { [deckId: string]: DeckProgress };
+export interface VisitorStudyDataType {
+  decks: { [deckId: string]: DeckProgressType };
   streak: {
     current: number;
     longest: number;
@@ -160,14 +160,14 @@ export const STUDY_STACK_BADGES = {
   PERFECTIONIST: "Perfectionist",
 } as const;
 
-export type BadgeName = (typeof STUDY_STACK_BADGES)[keyof typeof STUDY_STACK_BADGES];
+export type BadgeNameType = (typeof STUDY_STACK_BADGES)[keyof typeof STUDY_STACK_BADGES];
 
 /**
  * Badge UI metadata (title, icon, description) is sourced from the Topia
  * ecosystem inventory item — never hard-coded in this app. See
  * `.ai/examples/badges.md` for the canonical pattern.
  */
-export interface BadgeRecord {
+export interface BadgeRecordType {
   [name: string]: {
     id: string;
     name: string;
@@ -176,7 +176,7 @@ export interface BadgeRecord {
   };
 }
 
-export interface VisitorBadgeRecord {
+export interface VisitorBadgeRecordType {
   [name: string]: {
     id: string;
     name: string;
@@ -190,11 +190,11 @@ export interface VisitorBadgeRecord {
  * carries everything an admin needs.
  */
 export interface EcosystemDataObjectType {
-  studyStacksDecks?: { [deckId: string]: Deck };
+  studyStacksDecks?: { [deckId: string]: DeckType };
   [key: string]: unknown;
 }
 
-export interface SessionSummary {
+export interface SessionSummaryType {
   cardsStudied: number;
   correctCount: number;
   totalCardsInSession: number;

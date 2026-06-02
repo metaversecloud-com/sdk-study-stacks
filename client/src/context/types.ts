@@ -1,11 +1,11 @@
 import {
-  BadgeRecord,
-  Deck,
-  DeckScope,
-  SessionSummary,
-  StudyMode,
-  VisitorBadgeRecord,
-  VisitorStudyData,
+  BadgeRecordType,
+  DeckType,
+  DeckScopeType,
+  SessionSummaryType,
+  StudyModeType,
+  VisitorBadgeRecordType,
+  VisitorStudyDataType,
 } from "@shared/types/StudyStacksTypes";
 
 export const SET_HAS_INTERACTIVE_PARAMS = "SET_HAS_INTERACTIVE_PARAMS";
@@ -43,15 +43,15 @@ export interface SessionCard {
 export interface ActiveClientSession {
   sessionId: string;
   deckId: string;
-  deckScope: DeckScope;
-  mode: StudyMode;
+  deckScope: DeckScopeType;
+  mode: StudyModeType;
   cards: SessionCard[];
   startedAt: number;
   index: number;
   correctCount: number;
   totalAnswered: number;
   /** session result after /session/complete returns */
-  summary?: SessionSummary;
+  summary?: SessionSummaryType;
 }
 
 export interface InitialState {
@@ -60,12 +60,12 @@ export interface InitialState {
   error: string;
   muted: boolean;
   /** admin-authored, account-wide; visible to everyone */
-  ecosystemDecks: Deck[];
+  ecosystemDecks: DeckType[];
   /** this visitor's personal decks (scope: "user") */
-  userDecks: Deck[];
-  visitorStudyData?: VisitorStudyData;
-  badges: BadgeRecord;
-  visitorInventory: VisitorBadgeRecord;
+  userDecks: DeckType[];
+  visitorStudyData?: VisitorStudyDataType;
+  badges: BadgeRecordType;
+  visitorInventory: VisitorBadgeRecordType;
   session?: ActiveClientSession;
 }
 

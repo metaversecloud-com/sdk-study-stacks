@@ -1,11 +1,11 @@
 import { useContext, useState } from "react";
-import type { Deck } from "@shared/types/StudyStacksTypes";
+import type { DeckType } from "@shared/types/StudyStacksTypes";
 import { GlobalDispatchContext, GlobalStateContext } from "@context/GlobalContext";
 import { backendAPI, setErrorMessage } from "@/utils";
 import { ConfirmationModal, DeckResultsModal, EditDeck } from "@/components";
 import { ErrorType, SET_DECKS } from "@/context/types";
 
-const blankEcosystemDeck = (createdByProfileId: string, createdByDisplayName: string): Deck => ({
+const blankEcosystemDeck = (createdByProfileId: string, createdByDisplayName: string): DeckType => ({
   id: `d_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
   scope: "ecosystem",
   title: "",
@@ -55,15 +55,15 @@ const IconBtn = ({
 export const DecksList = () => {
   const dispatch = useContext(GlobalDispatchContext);
   const { ecosystemDecks } = useContext(GlobalStateContext);
-  const [editing, setEditing] = useState<Deck | null>(null);
-  const [viewingResults, setViewingResults] = useState<Deck | null>(null);
-  const [confirmDelete, setConfirmDelete] = useState<Deck | null>(null);
+  const [editing, setEditing] = useState<DeckType | null>(null);
+  const [viewingResults, setViewingResults] = useState<DeckType | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<DeckType | null>(null);
 
   // Admin tab manages ecosystem (class-wide) decks only — personal decks are
   // authored from the student-facing Library tab.
   const decks = ecosystemDecks;
 
-  const handleDelete = async (deck: Deck) => {
+  const handleDelete = async (deck: DeckType) => {
     try {
       await backendAPI.delete(`/decks/${deck.id}`, { params: { scope: "ecosystem" } });
       dispatch!({
@@ -77,8 +77,8 @@ export const DecksList = () => {
     }
   };
 
-  const handleDuplicate = (deck: Deck) => {
-    const copy: Deck = {
+  const handleDuplicate = (deck: DeckType) => {
+    const copy: DeckType = {
       ...deck,
       id: `d_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
       title: `${deck.title} (copy)`,
@@ -146,7 +146,7 @@ export const DecksList = () => {
       {confirmDelete && (
         <ConfirmationModal
           title="Delete class deck?"
-          message={`This will permanently delete "${confirmDelete.title}". Student mastery for this deck stays on record.`}
+          message={`This will permanently delete "${confirmDelete.title}".`}
           handleOnConfirm={() => handleDelete(confirmDelete)}
           handleToggleShowConfirmationModal={() => setConfirmDelete(null)}
         />

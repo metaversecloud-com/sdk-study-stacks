@@ -182,6 +182,29 @@ body.ss-body--other {
   }
 }
 
+/* Backgrounds */
+.ss-bg--math {
+  background: var(--ss-subj-math);
+}
+.ss-bg--science {
+  background: var(--ss-grad-science);
+}
+.ss-bg--history {
+  background: var(--ss-subj-history);
+}
+.ss-bg--ela {
+  background: var(--ss-subj-ela);
+}
+.ss-bg--language {
+  background: var(--ss-subj-language);
+}
+.ss-bg--art {
+  background: var(--ss-subj-art);
+}
+.ss-bg--other {
+  background: var(--ss-subj-other);
+}
+
 /* XP bar */
 .ss-xp {
   margin-top: 0.75rem;
@@ -463,7 +486,8 @@ body.ss-body--other {
   background: linear-gradient(135deg, var(--ss-purple) 0%, var(--ss-purple-dark) 100%);
 }
 .btn-outline,
-.btn-icon {
+.btn-icon,
+.btn-danger-outline {
   background: #fff;
 }
 .btn-danger {

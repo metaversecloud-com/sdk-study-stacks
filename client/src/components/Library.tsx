@@ -1,25 +1,20 @@
 import { useContext } from "react";
-import { Deck, DeckScope } from "@shared/types/StudyStacksTypes";
-import DeckCard from "./DeckCard";
+import { DeckType, DeckScopeType } from "@shared/types/StudyStacksTypes";
+import Deck from "./Deck";
 import { GlobalStateContext } from "@context/GlobalContext";
 
 export const Library = ({
   onPick,
   onCreate,
 }: {
-  onPick: (deckId: string, scope: DeckScope) => void;
+  onPick: (deckId: string, scope: DeckScopeType) => void;
   onCreate?: () => void;
 }) => {
   const { ecosystemDecks, userDecks, visitorStudyData } = useContext(GlobalStateContext);
 
-  const renderGroup = (decks: Deck[]) =>
+  const renderGroup = (decks: DeckType[]) =>
     decks.map((d) => (
-      <DeckCard
-        key={`${d.scope}-${d.id}`}
-        deck={d}
-        studyData={visitorStudyData}
-        onClick={() => onPick(d.id, d.scope)}
-      />
+      <Deck key={`${d.scope}-${d.id}`} deck={d} studyData={visitorStudyData} onClick={() => onPick(d.id, d.scope)} />
     ));
 
   return (

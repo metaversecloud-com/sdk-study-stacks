@@ -1,4 +1,4 @@
-import type { Deck } from "@shared/types/StudyStacksTypes";
+import type { DeckType } from "@shared/types/StudyStacksTypes";
 import { parseDeckResultsValue } from "@shared/types/StudyStacksTypes";
 
 // Lightweight HTML escape — `displayName` is user-supplied, so the rendered
@@ -20,7 +20,7 @@ const escapeHtml = (s: string) =>
  * Mirrors the equivalent helper in sdk-trivia but with HTML escaping and
  * scoped to the Study Stacks per-deck leaderboard shape.
  */
-export const openResultsInNewTab = (deck: Deck): void => {
+export const openResultsInNewTab = (deck: DeckType): void => {
   const parsed = Object.entries(deck.results || {}).map(([profileId, value]) => {
     const { displayName, sessions } = parseDeckResultsValue(value);
     return { profileId, displayName, sessions };

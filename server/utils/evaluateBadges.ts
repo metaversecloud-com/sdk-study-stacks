@@ -1,4 +1,4 @@
-import { Deck, STUDY_STACK_BADGES, StudyMode, Subject, VisitorStudyData } from "@shared/types/StudyStacksTypes.js";
+import { DeckType, STUDY_STACK_BADGES, StudyModeType, SubjectType, VisitorStudyDataType } from "@shared/types/StudyStacksTypes.js";
 import { Credentials } from "../types/index.js";
 import { awardBadge } from "./awardBadge.js";
 
@@ -6,17 +6,17 @@ export interface BadgeEvaluationContext {
   credentials: Credentials;
   visitor: any;
   visitorInventory: { [name: string]: any };
-  studyDataAfter: VisitorStudyData;
-  studyDataBefore: VisitorStudyData;
-  decks: { [deckId: string]: Deck };
-  sessionMode: StudyMode;
+  studyDataAfter: VisitorStudyDataType;
+  studyDataBefore: VisitorStudyDataType;
+  decks: { [deckId: string]: DeckType };
+  sessionMode: StudyModeType;
   sessionCorrect: number;
   sessionTotal: number;
   /** mastery transitions observed in this session for the "comeback kid" badge */
   comebackTransitions: boolean;
 }
 
-const checkBookwormTier = (data: VisitorStudyData): string[] => {
+const checkBookwormTier = (data: VisitorStudyDataType): string[] => {
   const total = data.totalCardsStudied;
   const out: string[] = [];
   if (total >= 50) out.push(STUDY_STACK_BADGES.BOOKWORM);
@@ -25,7 +25,7 @@ const checkBookwormTier = (data: VisitorStudyData): string[] => {
   return out;
 };
 
-const checkStreakTier = (data: VisitorStudyData): string[] => {
+const checkStreakTier = (data: VisitorStudyDataType): string[] => {
   const c = data.streak?.current || 0;
   const out: string[] = [];
   if (c >= 7) out.push(STUDY_STACK_BADGES.STREAKER);
@@ -33,7 +33,7 @@ const checkStreakTier = (data: VisitorStudyData): string[] => {
   return out;
 };
 
-const fullyMasteredDeckIds = (data: VisitorStudyData, decks: { [deckId: string]: Deck }): string[] => {
+const fullyMasteredDeckIds = (data: VisitorStudyDataType, decks: { [deckId: string]: DeckType }): string[] => {
   const out: string[] = [];
   for (const [deckId, progress] of Object.entries(data.decks || {})) {
     const deck = decks[deckId];
@@ -64,7 +64,7 @@ export const evaluateBadges = async (ctx: BadgeEvaluationContext): Promise<strin
 
   // Polyglot: deck-done on decks in 3 different subjects
   const masteredSubjects = new Set(
-    masteredDecks.map((id) => ctx.decks[id]?.subject).filter((s): s is Subject => Boolean(s)),
+    masteredDecks.map((id) => ctx.decks[id]?.subject).filter((s): s is SubjectType => Boolean(s)),
   );
   if (masteredSubjects.size >= 3) candidates.add(STUDY_STACK_BADGES.POLYGLOT);
 

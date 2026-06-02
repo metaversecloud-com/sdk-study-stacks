@@ -16,7 +16,6 @@ export const ConfirmationModal = ({
   const onConfirm = () => {
     setAreButtonsDisabled(true);
     handleOnConfirm();
-    handleToggleShowConfirmationModal();
   };
 
   return (

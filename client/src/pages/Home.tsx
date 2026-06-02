@@ -1,12 +1,12 @@
 import { useContext, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
-import { BadgesTab, EditDeck, Library, Mascot, PageContainer, ProgressTab } from "@/components";
+import { BadgesTab, EditDeck, Library, Mascot, ModePicker, PageContainer, ProgressTab } from "@/components";
 import { GlobalDispatchContext, GlobalStateContext } from "@context/GlobalContext";
 import { ErrorType, SET_CONFIG, SET_MUTED } from "@/context/types";
 import { backendAPI, setErrorMessage } from "@/utils";
 import Study from "./Study";
-import type { Deck } from "@shared/types/StudyStacksTypes";
+import type { DeckType, StudyModeType } from "@shared/types/StudyStacksTypes";
 
 type StudentTab = "library" | "progress" | "badges";
 
@@ -16,7 +16,7 @@ const xpForLevel = (cards: number) => {
   return { level, into, max: 100 };
 };
 
-const blankUserDeck = (): Deck => ({
+const blankUserDeck = (): DeckType => ({
   id: `d_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
   scope: "user",
   title: "",
@@ -39,7 +39,13 @@ export const Home = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [tab, setTab] = useState<StudentTab>("library");
   const [studyingDeckId, setStudyingDeckId] = useState<string | null>(null);
-  const [creatingDeck, setCreatingDeck] = useState<Deck | null>(null);
+  const [creatingDeck, setCreatingDeck] = useState<DeckType | null>(null);
+  // Mode selection lives at this level now (was inside Study): clicking a deck
+  // in the Library sets `pickingDeckId`, which pops `<ModePicker>` as a modal
+  // over the Library. Once the user picks a mode, both `playingMode` and
+  // `studyingDeckId` get set together and Study mounts with the chosen mode.
+  const [pickingDeckId, setPickingDeckId] = useState<string | null>(null);
+  const [playingMode, setPlayingMode] = useState<StudyModeType | null>(null);
 
   useEffect(() => {
     if (!hasInteractiveParams) return;
@@ -52,9 +58,21 @@ export const Home = () => {
       .finally(() => setIsLoading(false));
   }, [hasInteractiveParams, forceRefreshInventory, dispatch]);
 
+  // Defensive `d &&` — a deleted deck can momentarily linger as a null slot
+  // in the data object (Topia's delete-by-setting-null pattern). Guard keeps
+  // this from crashing on a stale payload.
+  const findDeckById = (id: string | null): DeckType | null =>
+    id ? [...ecosystemDecks, ...userDecks].find((d) => d && d.id === id) || null : null;
+
   const studyingDeck = useMemo(
-    () => [...ecosystemDecks, ...userDecks].find((d) => d && d.id === studyingDeckId) || null,
+    () => findDeckById(studyingDeckId),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [ecosystemDecks, userDecks, studyingDeckId],
+  );
+  const pickingDeck = useMemo(
+    () => findDeckById(pickingDeckId),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [ecosystemDecks, userDecks, pickingDeckId],
   );
 
   // Tint the whole app background to the selected deck's subject color. We theme
@@ -77,24 +95,25 @@ export const Home = () => {
   // User decks are always the current visitor's own, so they're always
   // editable; ecosystem decks are editable only by admins (matching the
   // server-side `isAdmin` gate for ecosystem scope).
-  const canEditStudyingDeck = Boolean(
-    studyingDeck && (studyingDeck.scope === "user" || (studyingDeck.scope === "ecosystem" && isAdmin)),
-  );
+  const canEdit = (deck: DeckType | null): boolean =>
+    Boolean(deck && (deck.scope === "user" || (deck.scope === "ecosystem" && isAdmin)));
 
   let content;
   if (studyingDeck) {
     content = (
       <Study
         deck={studyingDeck}
-        onExit={() => setStudyingDeckId(null)}
-        onEdit={
-          canEditStudyingDeck
-            ? () => {
-                setStudyingDeckId(null);
-                setCreatingDeck(studyingDeck);
-              }
-            : undefined
-        }
+        mode={playingMode || "flip"}
+        onExit={() => {
+          setStudyingDeckId(null);
+          setPlayingMode(null);
+        }}
+        onChangeMode={() => {
+          // "Study again" — pop the mode picker back up for the same deck.
+          setPickingDeckId(studyingDeck.id);
+          setStudyingDeckId(null);
+          setPlayingMode(null);
+        }}
       />
     );
   } else if (creatingDeck) {
@@ -160,7 +179,7 @@ export const Home = () => {
 
         <div role="tabpanel">
           {tab === "library" && (
-            <Library onPick={(deckId) => setStudyingDeckId(deckId)} onCreate={() => setCreatingDeck(blankUserDeck())} />
+            <Library onPick={(deckId) => setPickingDeckId(deckId)} onCreate={() => setCreatingDeck(blankUserDeck())} />
           )}
           {tab === "progress" && <ProgressTab />}
           {tab === "badges" && <BadgesTab />}
@@ -169,7 +188,34 @@ export const Home = () => {
     );
   }
 
-  return <PageContainer isLoading={isLoading}>{content}</PageContainer>;
+  return (
+    <PageContainer isLoading={isLoading}>
+      {content}
+      {/* Mode picker overlays whatever `content` is — Library while studying,
+          EndOfSession after "Study again", etc. createPortal handles the
+          stacking so it sits above the page. */}
+      {pickingDeck && (
+        <ModePicker
+          deck={pickingDeck}
+          onPick={(mode) => {
+            setPlayingMode(mode);
+            setStudyingDeckId(pickingDeck.id);
+            setPickingDeckId(null);
+          }}
+          onCancel={() => setPickingDeckId(null)}
+          onEdit={
+            canEdit(pickingDeck)
+              ? () => {
+                  setCreatingDeck(pickingDeck);
+                  setPickingDeckId(null);
+                }
+              : undefined
+          }
+          onDelete={canEdit(pickingDeck) ? () => setPickingDeckId(null) : undefined}
+        />
+      )}
+    </PageContainer>
+  );
 };
 
 export default Home;

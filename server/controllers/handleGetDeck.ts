@@ -7,7 +7,7 @@ import {
   normalizeStudyData,
   STUDY_STACKS_DATA_KEY,
 } from "@utils/index.js";
-import { DeckScope, VisitorStudyData } from "@shared/types/StudyStacksTypes.js";
+import { DeckScopeType, VisitorStudyDataType } from "@shared/types/StudyStacksTypes.js";
 
 export const handleGetDeck = async (req: Request, res: Response) => {
   try {
@@ -15,7 +15,7 @@ export const handleGetDeck = async (req: Request, res: Response) => {
     const { deckId } = req.params;
     if (!deckId) return res.status(400).json({ success: false, message: "deckId is required." });
 
-    const scope = (req.query.scope as DeckScope) || "ecosystem";
+    const scope = (req.query.scope as DeckScopeType) || "ecosystem";
     if (scope !== "user" && scope !== "ecosystem") {
       return res.status(400).json({ success: false, message: "Invalid scope." });
     }
@@ -32,7 +32,7 @@ export const handleGetDeck = async (req: Request, res: Response) => {
     }
 
     const visitorDataObject = (visitor.dataObject || {}) as Record<string, any>;
-    const studyData: VisitorStudyData = normalizeStudyData(visitorDataObject[STUDY_STACKS_DATA_KEY]);
+    const studyData: VisitorStudyDataType = normalizeStudyData(visitorDataObject[STUDY_STACKS_DATA_KEY]);
     const mastery = studyData.decks?.[deckId]?.cards || {};
 
     return res.json({ success: true, deck, mastery });

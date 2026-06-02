@@ -1,8 +1,8 @@
-import type { Card } from "@shared/types/StudyStacksTypes";
+import type { CardType } from "@shared/types/StudyStacksTypes";
 import { MAX_CARDS_PER_DECK } from "@shared/types/StudyStacksTypes";
 
 export interface ParseCardsResult {
-  cards: Card[];
+  cards: CardType[];
   /** rows the parser had to drop (blank, missing front/back, over the deck limit) */
   skipped: number;
   /** delimiter that was auto-detected — useful to surface to the user */
@@ -130,7 +130,7 @@ export const parseCardsImport = (rawText: string): ParseCardsResult => {
     start = 1;
   }
 
-  const cards: Card[] = [];
+  const cards: CardType[] = [];
   let skipped = 0;
   let droppedForLimit = 0;
   for (let i = start; i < rows.length; i++) {

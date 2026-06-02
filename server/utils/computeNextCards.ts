@@ -1,6 +1,6 @@
-import { Card, CardMastery, Deck, DeckProgress, isCardComplete, StudyMode } from "@shared/types/StudyStacksTypes.js";
+import { CardType, CardMasteryType, DeckType, DeckProgressType, isCardComplete, StudyModeType } from "@shared/types/StudyStacksTypes.js";
 
-export const defaultMastery = (cardId: string): CardMastery => ({
+export const defaultMastery = (cardId: string): CardMasteryType => ({
   cardId,
   mastery: 0,
   lastSeenAt: 0,
@@ -14,7 +14,7 @@ export const recencyPenalty = (lastSeenAt: number, now: number = Date.now()): nu
   return Math.min(2, Math.max(0, days / 3));
 };
 
-export const priority = (m: CardMastery, now: number = Date.now()): number => {
+export const priority = (m: CardMasteryType, now: number = Date.now()): number => {
   return (5 - m.mastery) * 2 + m.timesWrong + recencyPenalty(m.lastSeenAt, now);
 };
 
@@ -28,7 +28,7 @@ const shuffle = <T>(arr: T[]): T[] => {
 };
 
 export interface ComputedCard {
-  card: Card;
+  card: CardType;
   distractors?: string[];
 }
 
@@ -37,16 +37,16 @@ export interface ComputedCard {
  * For quiz, also assembles 3 distractor `back` strings per card.
  */
 export const computeNextCards = (
-  deck: Deck,
-  progress: DeckProgress | undefined,
-  mode: StudyMode,
+  deck: DeckType,
+  progress: DeckProgressType | undefined,
+  mode: StudyModeType,
   sessionSize: number,
   now: number = Date.now(),
 ): ComputedCard[] => {
   const cards = deck.cards.filter(isCardComplete);
   if (cards.length === 0) return [];
 
-  let chosen: Card[];
+  let chosen: CardType[];
   if (mode === "sprint") {
     chosen = shuffle(cards);
   } else {

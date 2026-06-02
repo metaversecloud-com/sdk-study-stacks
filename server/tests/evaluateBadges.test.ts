@@ -1,5 +1,5 @@
 import { evaluateBadges } from "../utils/evaluateBadges.js";
-import { STUDY_STACK_BADGES, Deck, VisitorStudyData } from "@shared/types/StudyStacksTypes.js";
+import { STUDY_STACK_BADGES, DeckType, VisitorStudyDataType } from "@shared/types/StudyStacksTypes.js";
 
 jest.mock("../utils/awardBadge.js", () => ({
   awardBadge: jest.fn(async ({ badgeName }: { badgeName: string }) => {
@@ -14,7 +14,7 @@ const baseCreds = { urlSlug: "w", sceneDropId: "s" } as any;
 const visitor = {};
 const visitorInventory = {};
 
-const makeData = (overrides: Partial<VisitorStudyData> = {}): VisitorStudyData => ({
+const makeData = (overrides: Partial<VisitorStudyDataType> = {}): VisitorStudyDataType => ({
   decks: {},
   streak: { current: 0, longest: 0, lastDay: "" },
   totalCardsStudied: 0,
@@ -22,7 +22,7 @@ const makeData = (overrides: Partial<VisitorStudyData> = {}): VisitorStudyData =
   ...overrides,
 });
 
-const makeDeck = (id: string, subject: Deck["subject"], cardIds: string[]): Deck => ({
+const makeDeck = (id: string, subject: DeckType["subject"], cardIds: string[]): DeckType => ({
   id,
   scope: "ecosystem",
   title: id,

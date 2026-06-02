@@ -8,13 +8,13 @@ import {
   getVisitor,
   persistDeck,
 } from "@utils/index.js";
-import { DeckScope } from "@shared/types/StudyStacksTypes.js";
+import { DeckScopeType } from "@shared/types/StudyStacksTypes.js";
 
 export const handleSaveDeck = async (req: Request, res: Response) => {
   try {
     const credentials = getCredentials(req.query);
     const incoming = req.body?.deck;
-    const scope: DeckScope = req.body?.scope;
+    const scope: DeckScopeType = req.body?.scope;
 
     if (!incoming || typeof incoming !== "object") {
       return res.status(400).json({ success: false, message: "Missing deck in request body." });
