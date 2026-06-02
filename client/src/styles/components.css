@@ -452,7 +452,7 @@ body.ss-body--other {
   background: linear-gradient(160deg, #ffffff 0%, #fff6ee 100%);
 }
 
-/* Pill buttons override SDK .btn defaults via cascade-layer priority */
+/* Buttons override SDK .btn defaults via cascade-layer priority */
 .btn {
   border-radius: var(--ss-radius-btn);
   font-family: var(--ss-font-display);
@@ -465,6 +465,9 @@ body.ss-body--other {
 .btn-outline,
 .btn-icon {
   background: #fff;
+}
+.btn-danger {
+  background: var(--ss-red-dark);
 }
 
 /* Flip card */

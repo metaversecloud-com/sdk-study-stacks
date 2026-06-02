@@ -110,9 +110,7 @@ export const EditDeck = ({ initial, onClose }: { initial: Deck; onClose: () => v
   // User-scope decks skip the grade requirement entirely (they're personal —
   // no audience to filter), so canPublish only enforces grades for ecosystem.
   const canPublish =
-    deck.title.trim().length > 0 &&
-    (!isEcosystemDeck || selectedGrades.length > 0) &&
-    deck.cards.some(isCardComplete);
+    deck.title.trim().length > 0 && (!isEcosystemDeck || selectedGrades.length > 0) && deck.cards.some(isCardComplete);
 
   const persist = async (status: Deck["status"]) => {
     if (savingRef.current) return;
@@ -196,9 +194,7 @@ export const EditDeck = ({ initial, onClose }: { initial: Deck; onClose: () => v
                 <input
                   type="checkbox"
                   checked={allGradesSelected}
-                  onChange={(e) =>
-                    setDeck((d) => ({ ...d, grades: e.target.checked ? ALL_GRADES_SENTINEL : [] }))
-                  }
+                  onChange={(e) => setDeck((d) => ({ ...d, grades: e.target.checked ? ALL_GRADES_SENTINEL : [] }))}
                 />
                 All grades
               </label>
@@ -251,19 +247,21 @@ export const EditDeck = ({ initial, onClose }: { initial: Deck; onClose: () => v
           {isAdmin && (
             <div className="mt-4">
               <span className="ss-field__label">Visibility</span>
-              <label className="ss-checkbox-row">
-                <input
-                  type="checkbox"
-                  checked={deck.scope === "ecosystem"}
-                  /* Scope is locked after first save — moving between the
-                   * Visitor and Ecosystem data objects would require recreating
-                   * the deck (and student mastery tied to the old id would
-                   * orphan). */
-                  disabled={isEditingExistingDeck}
-                  onChange={(e) => setScope(e.target.checked ? "ecosystem" : "user")}
-                />
-                Make available to all students (Class deck)
-              </label>
+              {!isEditingExistingDeck && (
+                <label className="ss-checkbox-row">
+                  <input
+                    type="checkbox"
+                    checked={deck.scope === "ecosystem"}
+                    /* Scope is locked after first save — moving between the
+                     * Visitor and Ecosystem data objects would require recreating
+                     * the deck (and student mastery tied to the old id would
+                     * orphan). */
+                    disabled={isEditingExistingDeck}
+                    onChange={(e) => setScope(e.target.checked ? "ecosystem" : "user")}
+                  />
+                  Make available to all students (Class deck)
+                </label>
+              )}
               <p className="p3" style={{ color: "var(--ss-text-dim)" }}>
                 {deck.scope === "ecosystem" ? "Available to all students." : "Only you will see this deck."}
               </p>

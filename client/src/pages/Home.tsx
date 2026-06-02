@@ -53,7 +53,7 @@ export const Home = () => {
   }, [hasInteractiveParams, forceRefreshInventory, dispatch]);
 
   const studyingDeck = useMemo(
-    () => [...ecosystemDecks, ...userDecks].find((d) => d.id === studyingDeckId) || null,
+    () => [...ecosystemDecks, ...userDecks].find((d) => d && d.id === studyingDeckId) || null,
     [ecosystemDecks, userDecks, studyingDeckId],
   );
 
@@ -160,10 +160,7 @@ export const Home = () => {
 
         <div role="tabpanel">
           {tab === "library" && (
-            <Library
-              onPick={(deckId) => setStudyingDeckId(deckId)}
-              onCreate={() => setCreatingDeck(blankUserDeck())}
-            />
+            <Library onPick={(deckId) => setStudyingDeckId(deckId)} onCreate={() => setCreatingDeck(blankUserDeck())} />
           )}
           {tab === "progress" && <ProgressTab />}
           {tab === "badges" && <BadgesTab />}

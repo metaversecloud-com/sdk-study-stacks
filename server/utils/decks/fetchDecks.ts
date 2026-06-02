@@ -12,6 +12,20 @@ import { standardizeError } from "../standardizeError.js";
  * Both are stored under the top-level key `studyStacksDecks`.
  */
 
+/**
+ * Topia's data-object delete pattern is "set the path to null", which leaves
+ * a `{ id: null }` slot behind in the parent map for at least one read cycle
+ * (sometimes longer, depending on SDK caching). Strip those before returning
+ * so callers — and any `Object.values` that follow — never see null entries.
+ */
+const pruneNullEntries = (map: Record<string, Deck | null | undefined>): Record<string, Deck> => {
+  const out: Record<string, Deck> = {};
+  for (const [id, deck] of Object.entries(map)) {
+    if (deck && typeof deck === "object") out[id] = deck;
+  }
+  return out;
+};
+
 export const fetchEcosystemDecks = async (credentials: Credentials): Promise<Record<string, Deck>> => {
   try {
     const ecosystem = await Ecosystem.create({ credentials });
@@ -27,7 +41,7 @@ export const fetchEcosystemDecks = async (credentials: Credentials): Promise<Rec
       }
       return {};
     }
-    return data.studyStacksDecks || {};
+    return pruneNullEntries(data.studyStacksDecks);
   } catch (error) {
     console.warn("fetchEcosystemDecks: returning empty.", error);
     return {};
@@ -39,7 +53,7 @@ export const fetchUserDecks = async (credentials: Credentials): Promise<Record<s
     const { visitorId, urlSlug } = credentials;
     const visitor = await Visitor.create(visitorId, urlSlug, { credentials });
     const data = ((await visitor.fetchDataObject()) as VisitorDataObjectType) || {};
-    return (data.studyStacksDecks as { [id: string]: Deck }) || {};
+    return pruneNullEntries((data.studyStacksDecks as Record<string, Deck | null | undefined>) || {});
   } catch (error) {
     throw standardizeError(error);
   }
