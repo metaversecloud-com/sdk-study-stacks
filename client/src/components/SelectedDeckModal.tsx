@@ -1,27 +1,32 @@
 import { useContext, useEffect, useState } from "react";
 import { DeckType, StudyModeType } from "@shared/types/StudyStacksTypes";
-import { ConfirmationModal, IconButton } from "@/components";
+import { ConfirmationModal } from "@/components";
 import { GlobalDispatchContext, GlobalStateContext } from "@context/GlobalContext";
 import { ErrorType, SET_DECKS } from "@/context/types";
 import { backendAPI, setErrorMessage, useClickOnce } from "@/utils";
 
-export const ModePicker = ({
+export const SelectedDeckModal = ({
   deck,
   onPick,
   onCancel,
+  onViewAnalytics,
   onEdit,
   onDelete,
 }: {
   deck: DeckType;
   onPick: (mode: StudyModeType) => void;
   onCancel: () => void;
-  /** Render an Edit button. Caller decides eligibility
+  /** Render an Analytics icon. Caller decides eligibility (admin + ecosystem
+   * scope) and supplies the click handler — usually `openResultsInNewTab(deck)`,
+   * which pops a printable per-student leaderboard in a new browser tab. */
+  onViewAnalytics?: () => void;
+  /** Render an Edit icon. Caller decides eligibility
    * (e.g. only the deck's creator). */
   onEdit?: () => void;
-  /** Render a Delete button. Same eligibility gate as Edit — when the
-   * confirmation succeeds, ModePicker fires the DELETE + dispatches the
-   * SET_DECKS update itself (matches DecksList's pattern), then calls
-   * this callback so the parent can dismiss the picker. */
+  /** Render a Delete icon. Same eligibility gate as Edit — when the
+   * confirmation succeeds, SelectedDeckModal fires the DELETE + dispatches the
+   * SET_DECKS update itself, then calls this callback so the parent can
+   * dismiss the picker. */
   onDelete?: () => void;
 }) => {
   const dispatch = useContext(GlobalDispatchContext);
@@ -92,19 +97,34 @@ export const ModePicker = ({
               <p className="p2 ss-text-light" style={{ marginTop: 4 }}>
                 {deck.cards.length} card{deck.cards.length === 1 ? "" : "s"} · {deck.difficulty}
               </p>
+              {onViewAnalytics && (
+                <a
+                  className="cursor-pointer"
+                  onClick={onViewAnalytics}
+                  aria-label="View analytics"
+                  title="View analytics"
+                >
+                  <img src="https://sdk-style.s3.amazonaws.com/icons/info.svg" alt="" aria-hidden="true" />
+                </a>
+              )}
               {onEdit && (
-                <a className="cursor-pointer" onClick={guard(onEdit)}>
+                <a className="cursor-pointer" onClick={onEdit} aria-label="Edit deck" title="Edit deck">
                   <img src="https://sdk-style.s3.amazonaws.com/icons/edit.svg" alt="" aria-hidden="true" />
                 </a>
               )}
               {onDelete && (
-                <a className="cursor-pointer" onClick={() => setConfirmingDelete(true)}>
+                <a
+                  className="cursor-pointer"
+                  onClick={() => setConfirmingDelete(true)}
+                  aria-label="Delete deck"
+                  title="Delete deck"
+                >
                   <img src="https://sdk-style.s3.amazonaws.com/icons/delete.svg" alt="" aria-hidden="true" />
                 </a>
               )}
             </div>
           </div>
-          <a className="pt-2 cursor-pointer" onClick={guard(onCancel)} aria-label="Close" title="Close">
+          <a className="pt-2 cursor-pointer" onClick={onCancel} aria-label="Close" title="Close">
             <img src="https://sdk-style.s3.amazonaws.com/icons/x.svg" alt="" aria-hidden="true" />
           </a>
         </div>
@@ -117,8 +137,8 @@ export const ModePicker = ({
             onClick={guard(() => onPick("flip"))}
             disabled={busy}
           >
-            <div className="ss-mode-card__title">🔁 Flip</div>
-            <div className="ss-mode-card__desc">See the prompt, recall the answer, tap to flip, rate yourself.</div>
+            <h4 className="ss-mode-card__title">🔁 Flip</h4>
+            <p className="ss-mode-card__desc">See the prompt, recall the answer, tap to flip, rate yourself.</p>
           </button>
           <button
             type="button"
@@ -126,8 +146,8 @@ export const ModePicker = ({
             onClick={guard(() => onPick("quiz"))}
             disabled={busy || !canQuiz}
           >
-            <div className="ss-mode-card__title">❓ Quiz</div>
-            <div className="ss-mode-card__desc">Pick the right answer from four options.</div>
+            <h4 className="ss-mode-card__title">❓ Quiz</h4>
+            <p className="ss-mode-card__desc">Pick the right answer from four options.</p>
           </button>
           <button
             type="button"
@@ -135,8 +155,8 @@ export const ModePicker = ({
             onClick={guard(() => onPick("sprint"))}
             disabled={busy || !canSprint}
           >
-            <div className="ss-mode-card__title">⚡ Sprint</div>
-            <div className="ss-mode-card__desc">60-second timed challenge — go fast!</div>
+            <h4 className="ss-mode-card__title">⚡ Sprint</h4>
+            <p className="ss-mode-card__desc">60-second timed challenge — go fast!</p>
           </button>
         </div>
       </div>
@@ -144,4 +164,4 @@ export const ModePicker = ({
   );
 };
 
-export default ModePicker;
+export default SelectedDeckModal;

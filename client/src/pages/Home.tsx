@@ -1,10 +1,10 @@
 import { useContext, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
-import { BadgesTab, EditDeck, Library, Mascot, ModePicker, PageContainer, ProgressTab } from "@/components";
+import { BadgesTab, EditDeck, Library, Mascot, SelectedDeckModal, PageContainer, ProgressTab } from "@/components";
 import { GlobalDispatchContext, GlobalStateContext } from "@context/GlobalContext";
 import { ErrorType, SET_CONFIG, SET_MUTED } from "@/context/types";
-import { backendAPI, setErrorMessage } from "@/utils";
+import { backendAPI, openResultsInNewTab, setErrorMessage } from "@/utils";
 import Study from "./Study";
 import type { DeckType, StudyModeType } from "@shared/types/StudyStacksTypes";
 
@@ -41,7 +41,7 @@ export const Home = () => {
   const [studyingDeckId, setStudyingDeckId] = useState<string | null>(null);
   const [creatingDeck, setCreatingDeck] = useState<DeckType | null>(null);
   // Mode selection lives at this level now (was inside Study): clicking a deck
-  // in the Library sets `pickingDeckId`, which pops `<ModePicker>` as a modal
+  // in the Library sets `pickingDeckId`, which pops `<SelectedDeckModal>` as a modal
   // over the Library. Once the user picks a mode, both `playingMode` and
   // `studyingDeckId` get set together and Study mounts with the chosen mode.
   const [pickingDeckId, setPickingDeckId] = useState<string | null>(null);
@@ -97,6 +97,10 @@ export const Home = () => {
   // server-side `isAdmin` gate for ecosystem scope).
   const canEdit = (deck: DeckType | null): boolean =>
     Boolean(deck && (deck.scope === "user" || (deck.scope === "ecosystem" && isAdmin)));
+
+  // Per-deck analytics only exist for ecosystem decks — user decks don't
+  // accumulate a leaderboard. Admin-gated to match the old AdminView access.
+  const canViewAnalytics = (deck: DeckType | null): boolean => Boolean(deck && deck.scope === "ecosystem" && isAdmin);
 
   let content;
   if (studyingDeck) {
@@ -195,7 +199,7 @@ export const Home = () => {
           EndOfSession after "Study again", etc. createPortal handles the
           stacking so it sits above the page. */}
       {pickingDeck && (
-        <ModePicker
+        <SelectedDeckModal
           deck={pickingDeck}
           onPick={(mode) => {
             setPlayingMode(mode);
@@ -203,6 +207,7 @@ export const Home = () => {
             setPickingDeckId(null);
           }}
           onCancel={() => setPickingDeckId(null)}
+          onViewAnalytics={canViewAnalytics(pickingDeck) ? () => openResultsInNewTab(pickingDeck) : undefined}
           onEdit={
             canEdit(pickingDeck)
               ? () => {

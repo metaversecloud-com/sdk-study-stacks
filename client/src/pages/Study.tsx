@@ -13,7 +13,7 @@ import {
 import { backendAPI, setErrorMessage } from "@/utils";
 import { EndOfSession, FlipCard, QuizCard, SprintHUD, StreakRing } from "@/components";
 
-// Mode is now picked at the Home level via `<ModePicker>` rendered as a
+// Mode is now picked at the Home level via `<SelectedDeckModal>` rendered as a
 // modal over the Library, so this page no longer owns a `picking-mode` phase.
 type Phase = "in-session" | "ended";
 

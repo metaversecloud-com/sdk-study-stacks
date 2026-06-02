@@ -324,6 +324,9 @@ export const EditDeck = ({ initial, onClose }: { initial: DeckType; onClose: () 
       )}
 
       <div className="flex gap-2 mt-6">
+        <button className="btn btn-outline" onClick={onClose} disabled={saving}>
+          Cancel
+        </button>
         {isEcosystemDeck ? (
           <>
             {!isAlreadyPublished && (
@@ -341,19 +344,14 @@ export const EditDeck = ({ initial, onClose }: { initial: DeckType; onClose: () 
             </button>
           </>
         ) : (
-          <>
-            <button className="btn btn-outline" onClick={onClose} disabled={saving}>
-              Cancel
-            </button>
-            <button
-              className="btn"
-              onClick={() => persist("published")}
-              disabled={saving || !canPublish}
-              aria-disabled={saving || !canPublish}
-            >
-              Save
-            </button>
-          </>
+          <button
+            className="btn"
+            onClick={() => persist("published")}
+            disabled={saving || !canPublish}
+            aria-disabled={saving || !canPublish}
+          >
+            Save
+          </button>
         )}
       </div>
 
