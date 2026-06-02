@@ -70,15 +70,17 @@ export const DecksList = () => {
   return (
     <div>
       <div className="ss-header-row">
-        <h2 className="h3" style={{ marginBottom: 0 }}>
+        <h3 className="ss-text-light" style={{ marginBottom: 0 }}>
           Class decks
-        </h2>
+        </h3>
         <button className="btn" onClick={() => setEditing(blankEcosystemDeck("", "Teacher"))}>
           + New class deck
         </button>
       </div>
 
-      <p className="p3">Class decks are visible to every student at every Study Stacks desk in this account.</p>
+      <p className="p3 ss-text-light">
+        Class decks are visible to every student at every Study Stacks desk in this account.
+      </p>
 
       {decks.length === 0 ? (
         <p className="ss-empty-state">No class decks yet. Create your first one.</p>

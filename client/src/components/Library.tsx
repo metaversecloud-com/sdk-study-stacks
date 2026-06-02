@@ -38,10 +38,6 @@ export const Library = ({
           + Create a new deck
         </button>
       )}
-
-      <p className="p3 mt-6" style={{ color: "var(--ss-text-dim)" }}>
-        Tip: your teacher can publish shared class decks too — they'll appear above.
-      </p>
     </div>
   );
 };
