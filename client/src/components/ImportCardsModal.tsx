@@ -155,7 +155,7 @@ export const ImportCardsModal = ({
             ))}
 
             {existingCount > 0 && (
-              <fieldset className="ss-import-mode mt-3">
+              <fieldset className="ss-import-mode mt-4">
                 <legend className="ss-field__label">When importing</legend>
                 <label className="ss-checkbox-row">
                   <input

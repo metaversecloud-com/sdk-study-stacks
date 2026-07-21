@@ -98,7 +98,7 @@ export const CardEditor = ({
           onClick={onDelete}
           aria-label={`Delete card ${index + 1}`}
         >
-          ✕
+          <div className="h-4 w-4 bg-red-600 [mask-image:url('https://sdk-style.s3.amazonaws.com/icons/delete.svg')] [mask-size:contain] [mask-repeat:no-repeat]" />
         </button>
       </div>
     </div>

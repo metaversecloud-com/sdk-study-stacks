@@ -106,7 +106,10 @@ body {
   margin: 0;
 }
 
-body.rtsdk {
+body.rtsdk,
+.rtsdk p,
+.rtsdk .p2,
+.rtsdk .p3 {
   font-family: var(--ss-font-body);
 }
 

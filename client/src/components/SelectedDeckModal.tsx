@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-import { DeckType, StudyModeType } from "@shared/types/StudyStacksTypes";
+import { DeckType, StudyModeType, isCardComplete } from "@shared/types/StudyStacksTypes";
 import { ConfirmationModal, IconButton } from "@/components";
 import { GlobalDispatchContext, GlobalStateContext } from "@context/GlobalContext";
 import { ErrorType, SET_DECKS } from "@/context/types";
@@ -31,7 +31,19 @@ export const SelectedDeckModal = ({
 }) => {
   const dispatch = useContext(GlobalDispatchContext);
   const { ecosystemDecks, userDecks } = useContext(GlobalStateContext);
-  const canQuiz = deck.cards.length >= 1;
+  // Quiz mode needs 4 multiple-choice options per question (1 correct + 3
+  // distractors). Distractors are drawn from other cards' backs server-side
+  // (see `computeNextCards`), where matches to the correct answer are
+  // deduped case-insensitively. So the effective gate is:
+  //   1. At least 4 complete cards (front + back filled), AND
+  //   2. At least 4 *distinct* backs (normalized). A True/False-only deck
+  //      would otherwise render every question as "True: False /
+  //      False: Different answer" via QuizCard's true-false fallback.
+  const completeCards = deck.cards.filter(isCardComplete);
+  const uniqueBacks = new Set(completeCards.map((c) => c.back.trim().toLowerCase()));
+  const hasEnoughCards = completeCards.length >= 4;
+  const hasEnoughDistinctAnswers = uniqueBacks.size >= 4;
+  const canQuiz = hasEnoughCards && hasEnoughDistinctAnswers;
   const canSprint = deck.cards.length >= 1;
   // Once any action is picked, lock the modal so a rage-click can't start
   // two sessions (or fire a navigation twice) before this view transitions out.
@@ -112,7 +124,9 @@ export const SelectedDeckModal = ({
           </a>
         </div>
 
-        <h3 className="ss-section-label mt-2">Choose a study mode</h3>
+        <h3 className="ss-section-label" style={{ marginTop: 0 }}>
+          Choose a study mode
+        </h3>
         <div className="ss-mode-grid mt-2">
           <button
             type="button"
@@ -128,9 +142,16 @@ export const SelectedDeckModal = ({
             className="ss-mode-card ss-mode-card--quiz"
             onClick={guard(() => onPick("quiz"))}
             disabled={busy || !canQuiz}
+            aria-disabled={busy || !canQuiz}
           >
             <h4 className="ss-mode-card__title">❓ Quiz</h4>
-            <p className="ss-mode-card__desc">Pick the right answer from four options.</p>
+            <p className="ss-mode-card__desc">
+              {canQuiz
+                ? "Pick the right answer from four options."
+                : !hasEnoughCards
+                  ? "Add at least 4 complete cards to unlock Quiz mode."
+                  : "Add cards with more distinct back answers to unlock Quiz mode."}
+            </p>
           </button>
           <button
             type="button"

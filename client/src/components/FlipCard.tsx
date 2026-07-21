@@ -60,7 +60,7 @@ export const FlipCard = ({
   return (
     <div>
       <p className="p2 pb-2 text-center ss-text-light">
-        CardType {index + 1} of {total}
+        {index + 1} of {total}
       </p>
 
       <div

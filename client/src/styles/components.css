@@ -443,7 +443,7 @@ body.ss-body--other {
   flex-direction: column;
   gap: 0.4rem;
 }
-.ss-mode-card:hover {
+.ss-mode-card:not(:disabled):hover {
   transform: translateY(-3px);
   border-color: var(--ss-primary);
   box-shadow: var(--ss-shadow-pop);
@@ -451,6 +451,10 @@ body.ss-body--other {
 .ss-mode-card:focus-visible {
   outline: 3px solid var(--ss-primary);
   outline-offset: 3px;
+}
+.ss-mode-card:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
 }
 .ss-mode-card__title {
   font-family: var(--ss-font-display);

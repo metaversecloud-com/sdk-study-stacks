@@ -44,6 +44,11 @@ export const EditDeck = ({ initial, onClose }: { initial: DeckType; onClose: () 
   const [confirmingCardRemoval, setConfirmingCardRemoval] = useState<number | null>(null);
   const [validationError, setValidationError] = useState<string>("");
   const [showImport, setShowImport] = useState(false);
+  // Two-step flow: 1 = deck metadata (title/subject/grades/difficulty/visibility),
+  // 2 = cards. Step navigation is unconditional — all "incomplete work isn't
+  // saved" enforcement still happens in `persist()` on Save/Publish, so users
+  // can freely walk back and forth without side effects.
+  const [step, setStep] = useState<1 | 2>(1);
 
   const updateField = <K extends keyof DeckType>(key: K, value: DeckType[K]) => {
     setDeck((d) => ({ ...d, [key]: value }));
@@ -163,158 +168,183 @@ export const EditDeck = ({ initial, onClose }: { initial: DeckType; onClose: () 
 
   return (
     <div>
-      <div className="ss-header-row grid grid-cols-2">
-        <h2 style={{ marginBottom: 0 }}>{initial.title ? `Edit: ${initial.title}` : "New deck"}</h2>
+      <div className="ss-header-row grid grid-cols-2 items-center pb-3">
+        <h2>{initial.title ? `Edit: ${initial.title}` : "New deck"}</h2>
+        <div className="justify-self-end">
+          {step === 1 ? (
+            <button type="button" className="btn w-auto" onClick={() => setStep(2)} aria-label="Continue to cards step">
+              Next →
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="btn btn-outline w-auto"
+              onClick={() => setStep(1)}
+              aria-label="Back to details step"
+              disabled={saving}
+            >
+              ← Back
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="grid gap-4" style={{ gridTemplateColumns: "1fr" }}>
-        <div className="card">
-          <label htmlFor="deck-title" style={{ display: "block", fontWeight: 600 }}>
-            Title
-          </label>
-          <input
-            id="deck-title"
-            className="input"
-            value={deck.title}
-            onChange={(e) => updateField("title", e.target.value.slice(0, 120))}
-            placeholder="e.g. Civil War Dates"
-          />
-
-          <div className="mt-2">
-            <label htmlFor="deck-subject" style={{ display: "block", fontWeight: 600 }}>
-              SubjectType
-            </label>
-            <select
-              id="deck-subject"
+        {step === 1 && (
+          <div className="card">
+            <label htmlFor="deck-title">Title</label>
+            <input
+              id="deck-title"
               className="input"
-              value={deck.subject}
-              onChange={(e) => updateField("subject", e.target.value as SubjectType)}
-            >
-              {SUBJECTS.map((s) => (
-                <option key={s.value} value={s.value}>
-                  {s.label}
-                </option>
-              ))}
-            </select>
-          </div>
+              value={deck.title}
+              onChange={(e) => updateField("title", e.target.value.slice(0, 120))}
+              placeholder="e.g. Civil War Dates"
+            />
 
-          {isEcosystemDeck && (
             <div className="mt-2">
-              <span className="ss-field__label">GradeType levels</span>
-              <label className="ss-checkbox-row">
-                <input
-                  type="checkbox"
-                  checked={allGradesSelected}
-                  onChange={(e) => setDeck((d) => ({ ...d, grades: e.target.checked ? ALL_GRADES_SENTINEL : [] }))}
-                />
-                All grades
-              </label>
-              {selectedGrades.length === 0 && (
-                <p className="ss-field__error">Select at least one grade or check &quot;All&quot;.</p>
-              )}
-              {!allGradesSelected && (
-                <div
-                  className={`ss-grade-list${selectedGrades.length === 0 ? " ss-grade-list--error" : ""}`}
-                  role="group"
-                  aria-label="Grade levels"
-                >
-                  {ALL_GRADES.map((g) => {
-                    const selected = selectedGrades.includes(g);
-                    return (
-                      <button
-                        key={g}
-                        type="button"
-                        className={`ss-grade-list__item${selected ? " ss-grade-list__item--selected" : ""}`}
-                        onClick={() => toggleGrade(g)}
-                        aria-pressed={selected}
-                      >
-                        {g}
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
+              <label htmlFor="deck-subject">Subject</label>
+              <select
+                id="deck-subject"
+                className="input"
+                value={deck.subject}
+                onChange={(e) => updateField("subject", e.target.value as SubjectType)}
+              >
+                {SUBJECTS.map((s) => (
+                  <option key={s.value} value={s.value}>
+                    {s.label}
+                  </option>
+                ))}
+              </select>
             </div>
-          )}
 
-          <div className="mt-2">
-            <label htmlFor="deck-difficulty" style={{ display: "block", fontWeight: 600 }}>
-              Difficulty
-            </label>
-            <select
-              id="deck-difficulty"
-              className="input"
-              value={deck.difficulty}
-              onChange={(e) => updateField("difficulty", e.target.value as DeckType["difficulty"])}
-            >
-              {DIFFICULTIES.map((d) => (
-                <option key={d} value={d}>
-                  {d}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {isAdmin && (
-            <div className="mt-4">
-              <span className="ss-field__label">Visibility</span>
-              {!isEditingExistingDeck && (
+            {isEcosystemDeck && (
+              <div className="mt-2">
+                <span className="ss-field__label">Grade levels</span>
                 <label className="ss-checkbox-row">
                   <input
                     type="checkbox"
-                    checked={deck.scope === "ecosystem"}
-                    /* Scope is locked after first save — moving between the
-                     * Visitor and Ecosystem data objects would require recreating
-                     * the deck (and student mastery tied to the old id would
-                     * orphan). */
-                    disabled={isEditingExistingDeck}
-                    onChange={(e) => setScope(e.target.checked ? "ecosystem" : "user")}
+                    checked={allGradesSelected}
+                    onChange={(e) => setDeck((d) => ({ ...d, grades: e.target.checked ? ALL_GRADES_SENTINEL : [] }))}
                   />
-                  Make available to all students (Class deck)
+                  All grades
                 </label>
-              )}
-              <p className="p3" style={{ color: "var(--ss-text-dim)" }}>
-                {deck.scope === "ecosystem" ? "Available to all students." : "Only you will see this deck."}
-              </p>
+                {selectedGrades.length === 0 && (
+                  <p className="ss-field__error">Select at least one grade or check &quot;All&quot;.</p>
+                )}
+                {!allGradesSelected && (
+                  <div
+                    className={`ss-grade-list${selectedGrades.length === 0 ? " ss-grade-list--error" : ""}`}
+                    role="group"
+                    aria-label="Grade levels"
+                  >
+                    {ALL_GRADES.map((g) => {
+                      const selected = selectedGrades.includes(g);
+                      return (
+                        <button
+                          key={g}
+                          type="button"
+                          className={`ss-grade-list__item${selected ? " ss-grade-list__item--selected" : ""}`}
+                          onClick={() => toggleGrade(g)}
+                          aria-pressed={selected}
+                        >
+                          {g}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div className="mt-2">
+              <label htmlFor="deck-difficulty">Difficulty</label>
+              <select
+                id="deck-difficulty"
+                className="input"
+                value={deck.difficulty}
+                onChange={(e) => updateField("difficulty", e.target.value as DeckType["difficulty"])}
+              >
+                {DIFFICULTIES.map((d) => (
+                  <option key={d} value={d}>
+                    {d}
+                  </option>
+                ))}
+              </select>
             </div>
-          )}
-        </div>
 
-        <div className="card">
-          <div className="ss-header-row">
-            <h4>
-              Cards ({deck.cards.length} / {MAX_CARDS_PER_DECK})
-            </h4>
-            <button type="button" className="btn btn-outline w-auto float-right" onClick={() => setShowImport(true)}>
-              ⤴ Import
-            </button>
-            <button type="button" className="btn" onClick={addCard} disabled={deck.cards.length >= MAX_CARDS_PER_DECK}>
-              + Add card
-            </button>
+            {isAdmin && (
+              <div className="mt-4">
+                <span className="ss-field__label">Visibility</span>
+                {!isEditingExistingDeck && (
+                  <label className="ss-checkbox-row">
+                    <input
+                      type="checkbox"
+                      checked={deck.scope === "ecosystem"}
+                      /* Scope is locked after first save — moving between the
+                       * Visitor and Ecosystem data objects would require recreating
+                       * the deck (and student mastery tied to the old id would
+                       * orphan). */
+                      disabled={isEditingExistingDeck}
+                      onChange={(e) => setScope(e.target.checked ? "ecosystem" : "user")}
+                    />
+                    Make available to all students (Class deck)
+                  </label>
+                )}
+                <p className="p3" style={{ color: "var(--ss-text-dim)" }}>
+                  {deck.scope === "ecosystem" ? "Available to all students." : "Only you will see this deck."}
+                </p>
+              </div>
+            )}
           </div>
+        )}
 
-          {deck.cards.length === 0 ? (
-            <p className="ss-empty-state">
-              No cards yet. Click <strong>+ Add card</strong> to enter one at a time, or <strong>⤴ Import</strong> to
-              paste/upload a list.
-            </p>
-          ) : (
-            deck.cards.map((c, i) => (
-              <CardEditor
-                key={c.id}
-                card={c}
-                index={i}
-                total={deck.cards.length}
-                onChange={(next) => updateCard(i, next)}
-                onMove={(dir) => moveCard(i, dir)}
-                onDelete={() => {
-                  if (deck.status === "published") setConfirmingCardRemoval(i);
-                  else deleteCard(i);
-                }}
-              />
-            ))
-          )}
-        </div>
+        {step === 2 && (
+          <>
+            <div className="flex gap-2 sticky top-0 py-2">
+              <button
+                type="button"
+                className="btn"
+                onClick={addCard}
+                disabled={deck.cards.length >= MAX_CARDS_PER_DECK}
+              >
+                + Add card
+              </button>
+              <button type="button" className="btn btn-outline" onClick={() => setShowImport(true)}>
+                ⤴ Import
+              </button>
+            </div>
+
+            <div className="card">
+              <div className="ss-header-row">
+                <h4>
+                  Cards ({deck.cards.length} / {MAX_CARDS_PER_DECK})
+                </h4>
+              </div>
+
+              {deck.cards.length === 0 ? (
+                <p className="ss-empty-state">
+                  No cards yet. Click <strong>+ Add card</strong> to enter one at a time, or <strong>⤴ Import</strong>{" "}
+                  to paste/upload a list.
+                </p>
+              ) : (
+                deck.cards.map((c, i) => (
+                  <CardEditor
+                    key={c.id}
+                    card={c}
+                    index={i}
+                    total={deck.cards.length}
+                    onChange={(next) => updateCard(i, next)}
+                    onMove={(dir) => moveCard(i, dir)}
+                    onDelete={() => {
+                      if (deck.status === "published") setConfirmingCardRemoval(i);
+                      else deleteCard(i);
+                    }}
+                  />
+                ))
+              )}
+            </div>
+          </>
+        )}
       </div>
 
       {validationError && (
@@ -323,36 +353,42 @@ export const EditDeck = ({ initial, onClose }: { initial: DeckType; onClose: () 
         </p>
       )}
 
-      <div className="flex gap-2 mt-6">
+      <div className="flex gap-2 mt-6 sticky bottom-0 py-2">
         <button className="btn btn-outline" onClick={onClose} disabled={saving}>
           Cancel
         </button>
-        {isEcosystemDeck ? (
-          <>
-            {!isAlreadyPublished && (
-              <button className="btn btn-outline" onClick={() => persist("draft")} disabled={saving}>
-                Save
+        {/* Save / Publish only surface on step 2. On step 1 the header's
+            Next button is the primary action — the user hasn't seen the
+            cards yet, so hiding the commit affordances avoids an ambiguous
+            "save with what cards?" state. Existing validation in persist()
+            still enforces every rule when they do click. */}
+        {step === 2 &&
+          (isEcosystemDeck ? (
+            <>
+              {!isAlreadyPublished && (
+                <button className="btn btn-outline" onClick={() => persist("draft")} disabled={saving}>
+                  Save
+                </button>
+              )}
+              <button
+                className="btn"
+                onClick={() => persist("published")}
+                disabled={saving || !canPublish}
+                aria-disabled={saving || !canPublish}
+              >
+                {isAlreadyPublished ? "Save changes" : "Publish"}
               </button>
-            )}
+            </>
+          ) : (
             <button
               className="btn"
               onClick={() => persist("published")}
               disabled={saving || !canPublish}
               aria-disabled={saving || !canPublish}
             >
-              {isAlreadyPublished ? "Save changes" : "Publish"}
+              Save
             </button>
-          </>
-        ) : (
-          <button
-            className="btn"
-            onClick={() => persist("published")}
-            disabled={saving || !canPublish}
-            aria-disabled={saving || !canPublish}
-          >
-            Save
-          </button>
-        )}
+          ))}
       </div>
 
       {confirmingCardRemoval !== null && (
