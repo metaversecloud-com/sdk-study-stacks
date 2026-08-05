@@ -1,0 +1,17 @@
+{
+  "app": "sdk-study-stacks",
+  "env": "dev",
+  "clusterName": "Topia-dev-SDK-Apps",
+  "clusterType": "eks",
+  "namespace": "sdk-apps-dev",
+  "services": [
+    {
+      "name": "studystack0",
+      "image": "368076259134.dkr.ecr.us-east-1.amazonaws.com/sdk-example:sdk-study-stacks",
+      "hosts": [
+        "studystack0-dev-topia.topia-rtsdk.com"
+      ],
+      "health": "/api/system/health"
+    }
+  ]
+}
