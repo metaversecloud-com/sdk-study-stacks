@@ -1,0 +1,19 @@
+# KEDA HTTP add-on scale-to-zero (0<->1) for dev. The interceptor holds the first
+# request while the Deployment scales 0->1, then forwards it.
+apiVersion: http.keda.sh/v1alpha1
+kind: HTTPScaledObject
+metadata:
+  name: studystack0
+spec:
+  hosts:
+    - studystack0-dev-topia.topia-rtsdk.com
+  scaleTargetRef:
+    name: studystack0
+    kind: Deployment
+    apiVersion: apps/v1
+    service: studystack0
+    port: 80
+  replicas:
+    min: 0
+    max: 1
+  scaledownPeriod: 10800
