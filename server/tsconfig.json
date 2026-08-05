@@ -31,13 +31,10 @@
     "paths": {
       "@shared/*": ["../shared/*"],
       "@utils/*": ["./utils/*"]
-    } /* Specify a set of entries that re-map imports to additional lookup locations. */,
+    },                                                   /* Specify a set of entries that re-map imports to additional lookup locations. */
     // "rootDirs": [],                                   /* Allow multiple folders to be treated as one when resolving modules. */
-    "typeRoots": [
-      "./node_modules/@types",
-      "../node_modules/@types"
-    ] /* Workspace hoists @types/* to the repo root, so look there too. */,
-    "types": ["jest", "node"] /* Explicitly include jest & node globals for tests. */,
+    // "typeRoots": [],                                  /* Specify multiple folders that act like './node_modules/@types'. */
+    // "types": [],                                      /* Specify type package names to be included without being referenced in a source file. */
     // "allowUmdGlobalAccess": true,                     /* Allow accessing UMD globals from modules. */
     // "moduleSuffixes": [],                             /* List of file name suffixes to search when resolving a module. */
     // "allowImportingTsExtensions": true,               /* Allow imports to include TypeScript file extensions. Requires '--moduleResolution bundler' and either '--noEmit' or '--emitDeclarationOnly' to be set. */
@@ -61,7 +58,7 @@
     // "inlineSourceMap": true,                          /* Include sourcemap files inside the emitted JavaScript. */
     // "outFile": "./",                                  /* Specify a file that bundles all outputs into one JavaScript file. If 'declaration' is true, also designates a file that bundles all .d.ts output. */
     "outDir": "./dist" /* Specify an output folder for all emitted files. */,
-    "rootDir": ".." /* Explicitly set the root directory to resolve common source directory error. */,
+    "rootDir": ".." /* Explicitly set the root directory (shared/ is included, so common source dir is the app root). */,
     // "removeComments": true,                           /* Disable emitting comments. */
     // "noEmit": true,                                   /* Disable emitting files from a compilation. */
     // "importHelpers": true,                            /* Allow importing helper functions from tslib once per project, instead of including them per-file. */
