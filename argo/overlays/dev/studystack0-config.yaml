@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: studystack0-config
+  labels:
+    app.kubernetes.io/name: studystack0
+data:
+  INSTANCE_DOMAIN: "api.topia.io"
+  INSTANCE_PROTOCOL: "https"
+  INTERACTIVE_KEY: "qHSmE2COPz2VquTVsO67"
+  NODE_ENV: "production"
+  PORT: "3000"

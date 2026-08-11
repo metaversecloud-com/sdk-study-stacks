@@ -1,28 +1,129 @@
 /*
- * App design tokens.
- *
- * Define brand colors, surfaces, gradients, shadows, etc. as CSS custom
- * properties here. Consume them in `components.css` and in JSX inline-style
- * `style={{ ... }}` only for genuinely dynamic values. Don't hard-code hex
- * values inside individual component classes.
- *
- * Use an app-specific prefix on every variable name (e.g. `--er-cyan` for the
- * escape-room app, `--kr-primary` for kitchen-rush) so tokens are obviously
- * project-scoped and won't collide with anything from the SDK or Tailwind.
- *
- * Example:
- *
- *   :root {
- *     --app-primary: #2563eb;
- *     --app-bg-card: #ffffff;
- *     --app-grad-hero: linear-gradient(135deg, #60a5fa, #2563eb);
- *     --app-shadow-card: 0 6px 14px rgba(15, 23, 42, 0.08);
- *   }
+ * Study Stacks design tokens — sourced from `.ai/templates/style.md`.
+ * Prefix: --ss-*
  */
 
-/* Re-add the box-sizing reset that Tailwind's preflight used to provide. */
+:root {
+  /* Primary palette */
+  --ss-electric-blue: #5c8aff;
+  --ss-electric-blue-dark: #2d5cd9;
+  --ss-teal: #2db5c7;
+  --ss-teal-dark: #008799;
+  --ss-mint: #5ce1b9;
+  --ss-mint-dark: #2cb98e;
+  --ss-yellow: #ffd84d;
+  --ss-yellow-dark: #ffc800;
+  --ss-coral: #ffb09a;
+  --ss-coral-dark: #ff7a59;
+  --ss-purple: #a88bff;
+  --ss-purple-dark: #7a5dd9;
+  --ss-pink: #ff89c5;
+  --ss-pink-dark: #e84198;
+  --ss-red: #ff6464;
+  --ss-red-dark: #e84141;
+
+  /* Semantic */
+  --ss-primary: var(--ss-electric-blue);
+  --ss-primary-dark: var(--ss-electric-blue-dark);
+  --ss-success: var(--ss-mint);
+  --ss-success-dark: var(--ss-mint-dark);
+  --ss-warning: var(--ss-coral);
+  --ss-danger: #ff5a4a;
+  --ss-accent: var(--ss-yellow);
+  --ss-streak: var(--ss-coral);
+  --ss-mastery: var(--ss-mint);
+  --ss-xp: var(--ss-electric-blue);
+
+  /* Neutrals */
+  --ss-bg-soft: #f7f9fc;
+  --ss-bg-card: #ffffff;
+  --ss-bg-muted: #eef2f9;
+  --ss-text: #1d2433;
+  --ss-text-dim: #667085;
+  --ss-text-light: #f0f1f4;
+  --ss-border: #e6eaf2;
+
+  /* Subject colors (per style guide categories) */
+  --ss-subj-math: var(--ss-electric-blue);
+  --ss-subj-science: var(--ss-teal-dark);
+  --ss-subj-history: var(--ss-coral);
+  --ss-subj-ela: var(--ss-purple);
+  --ss-subj-language: var(--ss-red-dark);
+  --ss-subj-art: var(--ss-pink);
+  --ss-subj-other: var(--ss-yellow-dark);
+
+  /* Gradients */
+  --ss-grad-hero: linear-gradient(135deg, var(--ss-electric-blue-dark) 0%, var(--ss-electric-blue));
+  --ss-grad-cosmos: linear-gradient(160deg, var(--ss-electric-blue) 0%, var(--ss-purple) 60%, var(--ss-pink) 100%);
+
+  --ss-grad-math: linear-gradient(135deg, var(--ss-electric-blue-dark) 0%, var(--ss-electric-blue));
+  --ss-grad-science: linear-gradient(135deg, var(--ss-teal-dark) 0%, var(--ss-teal));
+  --ss-grad-history: linear-gradient(135deg, var(--ss-coral-dark) 0%, var(--ss-coral) 100%);
+  --ss-grad-ela: linear-gradient(135deg, var(--ss-purple-dark) 0%, var(--ss-purple) 100%);
+  --ss-grad-language: linear-gradient(135deg, var(--ss-red-dark) 0%, var(--ss-red) 100%);
+  --ss-grad-art: linear-gradient(135deg, var(--ss-pink-dark) 0%, var(--ss-pink) 100%);
+  --ss-grad-other: linear-gradient(135deg, var(--ss-yellow-dark) 0%, var(--ss-yellow) 100%);
+
+  --ss-grad-card-front: linear-gradient(160deg, #ffffff 0%, #f4f6ff 100%);
+  --ss-grad-card-back: linear-gradient(160deg, #94a3b8 0%, #667085 100%);
+  /* --ss-grad-card-back: linear-gradient(160deg, var(--ss-electric-blue) 0%, var(--ss-purple) 100%); */
+
+  /* Shadows */
+  --ss-shadow: 0 1px 6px rgba(12, 15, 21, 0.4);
+  --ss-shadow-sm: 0 2px 6px rgba(29, 36, 51, 0.06);
+  --ss-shadow-card: 0 8px 22px rgba(74, 124, 255, 0.12), 0 2px 6px rgba(29, 36, 51, 0.05);
+  --ss-shadow-pop: 0 16px 36px rgba(74, 124, 255, 0.22), 0 4px 10px rgba(29, 36, 51, 0.08);
+  --ss-shadow-deck-pack: 0 12px 24px rgba(74, 124, 255, 0.18), 0 2px 0 rgba(74, 124, 255, 0.12);
+
+  /* Radii — large + pill, per style guide */
+  --ss-radius-card: 24px;
+  --ss-radius-card-lg: 28px;
+  --ss-radius-btn: 20px;
+  --ss-radius-pill: 999px;
+  --ss-radius-input: 14px;
+
+  --ss-min-tap: 44px;
+
+  --ss-anim-fast: 150ms;
+  --ss-anim-med: 280ms;
+  --ss-anim-slow: 600ms;
+
+  --ss-font-body: "Poppins", "Quicksand", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --ss-font-display: "Nunito", "Poppins", system-ui, sans-serif;
+}
+
 *,
 *::before,
 *::after {
   box-sizing: border-box;
+}
+
+html,
+body {
+  font-family: var(--ss-font-body);
+  color: var(--ss-text);
+  background: var(--ss-bg-soft);
+  margin: 0;
+}
+
+body.rtsdk,
+.rtsdk p,
+.rtsdk .p2,
+.rtsdk .p3 {
+  font-family: var(--ss-font-body);
+}
+
+.rtsdk h1,
+.rtsdk h2,
+.rtsdk h3,
+.rtsdk h4,
+.rtsdk h5,
+.rtsdk h6,
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--ss-font-display);
+  color: var(--ss-text);
+  letter-spacing: -0.01em;
 }

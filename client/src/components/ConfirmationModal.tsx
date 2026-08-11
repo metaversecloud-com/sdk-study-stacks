@@ -16,7 +16,6 @@ export const ConfirmationModal = ({
   const onConfirm = () => {
     setAreButtonsDisabled(true);
     handleOnConfirm();
-    handleToggleShowConfirmationModal();
   };
 
   return (
@@ -33,7 +32,7 @@ export const ConfirmationModal = ({
           >
             No
           </button>
-          <button className="btn btn-danger-outline" onClick={onConfirm} disabled={areButtonsDisabled}>
+          <button className="btn btn-danger" onClick={onConfirm} disabled={areButtonsDisabled}>
             Yes
           </button>
         </div>

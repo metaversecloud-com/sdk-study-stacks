@@ -1,29 +1,1185 @@
 /*
- * App-specific component classes.
- *
- * These are unlayered (not wrapped in `@layer { … }`) so they win over both
- * the SDK component styles (.btn, .card, etc.) and Tailwind utilities — no
- * `!important` needed.
- *
- * Use an app-specific prefix on every class name (e.g. `.er-card--running`
- * for the escape-room app, `.kr-tile` for kitchen-rush) so these classes are
- * obviously project-scoped and won't collide with the SDK or Tailwind.
- *
- * Build on top of the SDK's design system rather than replacing it:
- *
- *   <div className="card app-card app-card--featured">…</div>
- *
- * not
- *
- *   <div className="app-custom-card">…</div>
- *
- * Consume tokens from `tokens.css` instead of hard-coding values:
- *
- *   .app-card--featured {
- *     background: var(--app-grad-hero);
- *     border-color: var(--app-primary);
- *     box-shadow: var(--app-shadow-card);
- *   }
- *
- * See `.ai/style-guide.md` for the full convention.
+ * Study Stacks component classes (prefix: .ss-*).
+ * Unlayered — these win over SDK + Tailwind without !important.
  */
+
+.ss-page {
+  font-size: 17px;
+  font-family: var(--ss-font-body);
+  background: var(--ss-bg-soft);
+  min-height: 100vh;
+  padding-bottom: 2rem;
+  max-width: 100%;
+}
+
+.ss-page-bg {
+  position: relative;
+  background: radial-gradient(900px 500px at 110% -10%, rgba(168, 139, 255, 0.18), transparent 60%),
+    radial-gradient(700px 420px at -10% 110%, rgba(92, 225, 185, 0.16), transparent 60%), var(--ss-bg-soft);
+}
+
+/* Subject-tinted app background — applied to <body> while a deck is selected so
+ * the wash covers the full viewport (behind the page padding), not just the
+ * content box. Each subject modifier sets --ss-page-accent; the base washes it
+ * over the soft background. Set via document.body classes from Home. */
+body.ss-body--subject {
+  --ss-page-accent: var(--ss-subj-other);
+  /* min-height so the wash fills the viewport even when content is short —
+   * html/body both carry an opaque bg, so the body box is what's visible. */
+  min-height: 100vh;
+  /* stars.png is the top layer (transparent texture) over the accent color/
+   * gradient — it sits on top without hiding the subject color. */
+  background:
+    url("../assets/stars.png") bottom right no-repeat,
+    var(--ss-page-accent);
+  background-attachment: fixed;
+  background-blend-mode: soft-light;
+  transition: background var(--ss-anim-slow) ease;
+}
+body.ss-body--math {
+  --ss-page-accent: var(--ss-subj-math);
+}
+body.ss-body--science {
+  --ss-page-accent: var(--ss-grad-science);
+}
+body.ss-body--history {
+  --ss-page-accent: var(--ss-subj-history);
+}
+body.ss-body--ela {
+  --ss-page-accent: var(--ss-subj-ela);
+}
+body.ss-body--language {
+  --ss-page-accent: var(--ss-subj-language);
+}
+body.ss-body--art {
+  --ss-page-accent: var(--ss-subj-art);
+}
+body.ss-body--other {
+  --ss-page-accent: var(--ss-subj-other);
+}
+/* @media (prefers-reduced-motion: reduce) {
+  body.ss-body--subject {
+    transition: none;
+  }
+} */
+
+/* Greeting / header */
+.ss-greeting {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1.1rem 1.1rem;
+  border-radius: var(--ss-radius-card-lg);
+  background: var(--ss-grad-cosmos);
+  color: #fff;
+  box-shadow: var(--ss-shadow-pop);
+  position: relative;
+  overflow: hidden;
+  flex-wrap: wrap;
+}
+.ss-greeting::before {
+  /* tiny star sparkles in the background */
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(2px 2px at 12% 28%, rgba(255, 255, 255, 0.7), transparent 50%),
+    radial-gradient(1.5px 1.5px at 78% 18%, rgba(255, 255, 255, 0.6), transparent 50%),
+    radial-gradient(2px 2px at 35% 78%, rgba(255, 255, 255, 0.5), transparent 50%),
+    radial-gradient(1.5px 1.5px at 88% 72%, rgba(255, 255, 255, 0.55), transparent 50%);
+  pointer-events: none;
+}
+.ss-greeting__text {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1 1 240px;
+  min-width: 0;
+}
+.ss-greeting__text > div {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+.ss-greeting__hi {
+  font-family: var(--ss-font-display);
+  font-weight: 800;
+  font-size: clamp(1.15rem, 3.4vw, 1.45rem);
+  color: #fff !important;
+  margin: 0;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+.ss-greeting__sub {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.9);
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.ss-greeting__right {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+  flex-wrap: wrap;
+  flex: 0 1 auto;
+}
+
+/* Text */
+
+.ss-text-light {
+  font-family: var(--ss-font-body);
+  font-weight: 500;
+  color: var(--ss-text-light) !important;
+  text-shadow: var(--ss-shadow);
+}
+
+/* Streak pill */
+.ss-streak-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.45rem 0.9rem;
+  border-radius: var(--ss-radius-pill);
+  background: rgba(255, 255, 255, 0.95);
+  color: var(--ss-coral);
+  font-family: var(--ss-font-display);
+  font-weight: 800;
+  font-size: 0.95rem;
+  box-shadow: var(--ss-shadow-sm);
+}
+.ss-streak-pill__icon {
+  font-size: 1.1rem;
+  filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.1));
+}
+.ss-streak-pill--pulse {
+  animation: ss-streak-pulse var(--ss-anim-slow) ease-out 1;
+}
+@keyframes ss-streak-pulse {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.18);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ss-streak-pill--pulse {
+    animation: none;
+  }
+}
+
+/* Backgrounds */
+.ss-bg--math {
+  background: var(--ss-subj-math);
+}
+.ss-bg--science {
+  background: var(--ss-grad-science);
+}
+.ss-bg--history {
+  background: var(--ss-subj-history);
+}
+.ss-bg--ela {
+  background: var(--ss-subj-ela);
+}
+.ss-bg--language {
+  background: var(--ss-subj-language);
+}
+.ss-bg--art {
+  background: var(--ss-subj-art);
+}
+.ss-bg--other {
+  background: var(--ss-subj-other);
+}
+
+/* XP bar */
+.ss-xp {
+  margin-top: 0.75rem;
+  position: relative;
+  z-index: 1;
+}
+.ss-xp__label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.95);
+  margin-bottom: 0.25rem;
+}
+.ss-xp__track {
+  height: 10px;
+  border-radius: var(--ss-radius-pill);
+  background: rgba(255, 255, 255, 0.25);
+  overflow: hidden;
+}
+.ss-xp__fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--ss-yellow), #ffeaa3);
+  border-radius: var(--ss-radius-pill);
+  transition: width var(--ss-anim-med) ease;
+  box-shadow: 0 0 12px rgba(255, 216, 77, 0.7);
+}
+
+/* Tabs */
+.ss-tab-bar {
+  display: flex;
+  justify-content: space-evenly;
+  gap: 0.4rem;
+  margin: 1.25rem 0 1rem;
+  padding: 0.35rem;
+  border-radius: var(--ss-radius-pill);
+  background: var(--ss-bg-card);
+  box-shadow: var(--ss-shadow-sm);
+  border: 1px solid var(--ss-border);
+  overflow-x: auto;
+}
+.ss-tab {
+  background: transparent;
+  border: 0;
+  padding: 0.55rem 1.1rem;
+  min-height: var(--ss-min-tap);
+  font-family: var(--ss-font-display);
+  font-weight: 700;
+  color: var(--ss-text-dim);
+  border-radius: var(--ss-radius-pill);
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background var(--ss-anim-fast) ease,
+    color var(--ss-anim-fast) ease;
+}
+.ss-tab[aria-selected="true"] {
+  background: var(--ss-grad-hero);
+  color: #fff;
+  box-shadow: var(--ss-shadow-sm);
+}
+.ss-tab:focus-visible {
+  outline: 3px solid var(--ss-primary);
+  outline-offset: 2px;
+}
+
+/* Deck cards — collectible card pack feel */
+.ss-deck-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+}
+@media (max-width: 380px) {
+  .ss-deck-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Card-pack with two real containers:
+ *   .ss-deck-card__header — gradient strip holding icon, ring, and title
+ *   .ss-deck-card__body   — neutral surface for metadata
+ * The card itself owns layout (flex column, no padding) so the header
+ * gradient bleeds edge-to-edge without absolute-positioning tricks. */
+.ss-deck-card {
+  --deck-color: var(--ss-subj-other);
+  --deck-grad: var(--ss-grad-hero);
+  background: var(--ss-bg-card);
+  border-radius: var(--ss-radius-card);
+  box-shadow: var(--ss-shadow-deck-pack);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  cursor: pointer;
+  border: 0;
+  position: relative;
+  overflow: hidden;
+  transition:
+    transform var(--ss-anim-fast) ease,
+    box-shadow var(--ss-anim-fast) ease;
+}
+
+.ss-deck-card__header {
+  background: var(--deck-grad);
+  padding: 0.85rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  color: #fff;
+  border-radius: var(--ss-radius-card) var(--ss-radius-card) 0 0;
+}
+.ss-deck-card__header-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ss-deck-card__icon {
+  border-radius: 14px;
+  color: var(--deck-color);
+  display: inline-flex;
+  font-size: 1.6rem;
+}
+
+.ss-deck-card__ring-wrap {
+  flex: 0 0 auto;
+}
+
+.ss-deck-card__title {
+  flex-grow: 1;
+  font-family: var(--ss-font-display);
+  font-weight: 800;
+  font-size: 1.05rem;
+  color: #fff;
+  margin: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  line-height: 1.25;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.08);
+}
+.ss-deck-card__star {
+  display: inline-block;
+  margin-right: 0.1rem;
+}
+
+.ss-deck-card__body {
+  padding: 0.85rem 1rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  flex: 1 1 auto;
+}
+.ss-deck-card__meta {
+  font-size: 0.85rem;
+  color: var(--ss-text-dim);
+  overflow-wrap: anywhere;
+}
+
+.ss-deck-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--ss-shadow-pop);
+}
+.ss-deck-card:focus-visible {
+  outline: 3px solid var(--ss-primary);
+  outline-offset: 3px;
+}
+
+/* Subject color modifiers */
+.ss-deck-card--math {
+  --deck-color: var(--ss-subj-math);
+  --deck-grad: var(--ss-grad-math);
+}
+.ss-deck-card--science {
+  --deck-color: var(--ss-subj-science);
+  --deck-grad: var(--ss-grad-science);
+}
+.ss-deck-card--history {
+  --deck-color: var(--ss-subj-history);
+  --deck-grad: var(--ss-grad-history);
+}
+.ss-deck-card--ela {
+  --deck-color: var(--ss-subj-ela);
+  --deck-grad: var(--ss-grad-ela);
+}
+.ss-deck-card--language {
+  --deck-color: var(--ss-subj-language);
+  --deck-grad: var(--ss-grad-language);
+}
+.ss-deck-card--art {
+  --deck-color: var(--ss-subj-art);
+  --deck-grad: var(--ss-grad-art);
+}
+.ss-deck-card--other {
+  --deck-color: var(--ss-subj-other);
+  --deck-grad: var(--ss-grad-other);
+}
+
+/* Mastery ring */
+.ss-mastery-ring {
+  position: relative;
+  width: 52px;
+  height: 52px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 50%;
+  box-shadow: var(--ss-shadow-sm);
+}
+.ss-mastery-ring svg {
+  transform: rotate(-90deg);
+}
+.ss-mastery-ring__label {
+  position: absolute;
+  font-family: var(--ss-font-display);
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--ss-text);
+}
+
+/* Mode picker */
+.ss-mode-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.75rem;
+}
+@media (max-width: 360px) {
+  .ss-mode-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.ss-mode-card {
+  background: var(--ss-bg-card);
+  border: 2px solid var(--ss-border);
+  border-radius: var(--ss-radius-card);
+  padding: 1.25rem;
+  text-align: left;
+  cursor: pointer;
+  min-height: 150px;
+  transition:
+    border-color var(--ss-anim-fast) ease,
+    transform var(--ss-anim-fast) ease,
+    box-shadow var(--ss-anim-fast) ease;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.ss-mode-card:not(:disabled):hover {
+  transform: translateY(-3px);
+  border-color: var(--ss-primary);
+  box-shadow: var(--ss-shadow-pop);
+}
+.ss-mode-card:focus-visible {
+  outline: 3px solid var(--ss-primary);
+  outline-offset: 3px;
+}
+.ss-mode-card:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+.ss-mode-card__title {
+  font-family: var(--ss-font-display);
+  font-weight: 800;
+  font-size: 1.2rem;
+}
+.ss-mode-card--flip {
+  background: linear-gradient(160deg, #ffffff 0%, #f3f6ff 100%);
+}
+.ss-mode-card--quiz {
+  background: linear-gradient(160deg, #ffffff 0%, #f1fbf6 100%);
+}
+.ss-mode-card--sprint {
+  background: linear-gradient(160deg, #ffffff 0%, #fff6ee 100%);
+}
+
+/* Buttons override SDK .btn defaults via cascade-layer priority */
+.btn {
+  border-radius: var(--ss-radius-btn);
+  font-family: var(--ss-font-display);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
+  background: linear-gradient(135deg, var(--ss-purple) 0%, var(--ss-purple-dark) 100%);
+}
+.btn-outline,
+.btn-icon,
+.btn-danger-outline {
+  background: #fff;
+}
+.btn-danger {
+  background: var(--ss-red-dark);
+}
+
+/* Flip card */
+.ss-flip-stage {
+  perspective: 1400px;
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+}
+.ss-flip-card {
+  position: relative;
+  width: 100%;
+  /* Both faces share a single grid cell so the card grows to fit the taller
+   * face (min 300px) instead of clipping/scrolling its content. */
+  display: grid;
+  min-height: 300px;
+  transition: transform var(--ss-anim-med) ease;
+  transform-style: preserve-3d;
+}
+.ss-flip-card--flipped {
+  transform: rotateY(180deg);
+}
+.ss-flip-card__face {
+  grid-area: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 1.5rem 1.25rem;
+  border-radius: var(--ss-radius-card-lg);
+  box-shadow: var(--ss-shadow-card);
+  background: var(--ss-grad-card-front);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border: 1px solid var(--ss-border);
+  font-family: var(--ss-font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--ss-text);
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+.ss-flip-card__face--back {
+  transform: rotateY(180deg);
+  background: var(--ss-grad-card-back);
+  color: #fff;
+}
+.ss-flip-card__image {
+  display: block;
+  margin: 0 auto 0.75rem;
+  max-height: 160px;
+  max-width: 100%;
+  width: auto;
+  object-fit: contain;
+  border-radius: var(--ss-radius-input);
+}
+.ss-quiz-prompt__image {
+  display: block;
+  margin: 0 auto 0.75rem;
+  max-height: 160px;
+  max-width: 100%;
+  width: auto;
+  object-fit: contain;
+  border-radius: var(--ss-radius-input);
+}
+.ss-flip-card__face--back .ss-flip-card__hint {
+  color: rgba(255, 255, 255, 0.85);
+}
+/* Optional hint reveal — a "Show hint" button that swaps to the hint text. */
+.ss-hint-row {
+  text-align: center;
+  padding-top: 1rem;
+}
+.ss-hint-btn {
+  min-height: auto;
+  padding: 0.4rem 1rem;
+  font-size: 0.9rem;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ss-flip-card {
+    transition: opacity var(--ss-anim-fast) ease;
+    transform: none;
+  }
+  .ss-flip-card--flipped {
+    transform: none;
+  }
+  .ss-flip-card--flipped .ss-flip-card__face:not(.ss-flip-card__face--back) {
+    opacity: 0;
+  }
+  .ss-flip-card__face--back {
+    transform: none;
+    opacity: 0;
+  }
+  .ss-flip-card--flipped .ss-flip-card__face--back {
+    opacity: 1;
+  }
+}
+
+/* Rating buttons — friendlier red ✗ / green ✓ per mockup */
+.ss-rating-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.6rem;
+  margin-top: 1.25rem;
+}
+.ss-rating-btn {
+  min-height: 56px;
+  border-radius: var(--ss-radius-btn);
+  font-family: var(--ss-font-display);
+  font-weight: 800;
+  font-size: 1rem;
+  box-shadow: var(--ss-shadow);
+  cursor: pointer;
+}
+.ss-rating-btn--got-it {
+  background: var(--ss-success);
+  color: var(--ss-text);
+  border: 0;
+}
+.ss-rating-btn--almost {
+  background: var(--ss-yellow);
+  color: var(--ss-text);
+  border: 0;
+}
+.ss-rating-btn--missed {
+  background: var(--ss-danger);
+  color: #fff;
+  border: 0;
+}
+.ss-rating-btn:hover {
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+}
+
+/* Quiz options */
+.ss-quiz-options {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.6rem;
+  margin-top: 1rem;
+}
+.ss-quiz-option {
+  text-align: left;
+  min-height: 56px;
+  border-radius: var(--ss-radius-btn);
+  font-weight: 600;
+  background: var(--ss-bg-card);
+  border: 2px solid var(--ss-border);
+  color: var(--ss-text);
+  padding: 0.75rem 1.1rem;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.35;
+}
+.ss-quiz-option:hover {
+  border-color: var(--ss-primary);
+  transform: translateY(-1px);
+}
+.ss-quiz-option--correct {
+  background: var(--ss-success);
+  color: var(--ss-text);
+  border-color: var(--ss-success-dark);
+}
+.ss-quiz-option--wrong {
+  background: var(--ss-danger);
+  color: #fff;
+  border-color: var(--ss-danger);
+}
+.ss-quiz-feedback {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  font-family: var(--ss-font-display);
+  font-weight: 700;
+}
+.ss-quiz-feedback--correct {
+  color: var(--ss-success-dark);
+}
+.ss-quiz-feedback--wrong {
+  color: var(--ss-danger);
+}
+
+/* Burst on correct */
+.ss-burst {
+  animation: ss-burst-anim var(--ss-anim-slow) ease-out;
+}
+@keyframes ss-burst-anim {
+  0% {
+    box-shadow: 0 0 0 0 var(--ss-yellow);
+  }
+  60% {
+    box-shadow: 0 0 0 24px rgba(92, 225, 185, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(92, 225, 185, 0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ss-burst {
+    animation: none;
+  }
+}
+
+/* Sprint HUD */
+.ss-sprint-hud {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: var(--ss-bg-card);
+  border: 1px solid var(--ss-border);
+  border-radius: var(--ss-radius-card);
+  margin-bottom: 1rem;
+  font-family: var(--ss-font-display);
+  font-weight: 800;
+  box-shadow: var(--ss-shadow-sm);
+}
+.ss-sprint-timer {
+  background: var(--ss-grad-hero);
+  color: #fff;
+  padding: 0.4rem 1rem;
+  border-radius: var(--ss-radius-pill);
+  min-width: 80px;
+  text-align: center;
+  font-size: 1.05rem;
+}
+.ss-sprint-timer--danger {
+  background: linear-gradient(135deg, #ff8a7a 0%, var(--ss-danger) 100%);
+  animation: ss-pulse var(--ss-anim-med) ease-in-out infinite;
+}
+@keyframes ss-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.06);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ss-sprint-timer--danger {
+    animation: none;
+  }
+}
+
+/* End of session */
+.ss-end-card {
+  text-align: center;
+  padding: 2rem 1.5rem;
+  border-radius: var(--ss-radius-card-lg);
+  background: var(--ss-bg-card);
+  border: 1px solid var(--ss-border);
+  box-shadow: var(--ss-shadow-pop);
+}
+.ss-end-stat {
+  font-family: var(--ss-font-display);
+  font-size: 2.4rem;
+  font-weight: 900;
+  color: var(--ss-primary);
+  line-height: 1;
+}
+
+/* Stat card — big number with its label sitting beside it, bottom-aligned.
+ * flex-direction is set explicitly because the SDK `.card` class defaults to
+ * column, which would otherwise stack the label under the value. */
+.ss-stat-card {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+.ss-stat-card__value {
+  font-family: var(--ss-font-display);
+  font-size: 2.4rem;
+  font-weight: 900;
+  color: var(--ss-primary);
+  line-height: 1;
+}
+.ss-stat-card__label {
+  color: var(--ss-text-dim);
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+/* Badges grid */
+.ss-badge-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  list-style: "none";
+  padding: 0;
+  margin: 0;
+}
+.ss-badge-tile {
+  min-width: 0;
+}
+.ss-badge-tile span {
+  overflow-wrap: anywhere;
+}
+.ss-badge-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  text-align: center;
+}
+.ss-badge-tile__img {
+  max-width: 100%;
+}
+.ss-badge-tile--locked .ss-badge-tile__img {
+  filter: grayscale(1) opacity(0.5);
+}
+.ss-badge-tile__placeholder {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--ss-grad-yellow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  box-shadow: var(--ss-shadow-sm);
+}
+.ss-badge-tile--locked .ss-badge-tile__placeholder {
+  background: var(--ss-bg-muted);
+  color: var(--ss-text-dim);
+}
+
+/* Admin form labels + grade picker (sdk-trivia EditSet pattern) */
+.ss-field__label {
+  display: block;
+  font-family: var(--ss-font-display);
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ss-text-dim);
+  margin-bottom: 0.4rem;
+}
+.ss-field__error {
+  margin: 0.4rem 0 0;
+  font-size: 0.85rem;
+  color: var(--ss-danger);
+  font-weight: 600;
+}
+.ss-checkbox-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+  cursor: pointer;
+  user-select: none;
+  margin-bottom: 0.5rem;
+}
+.ss-checkbox-row input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--ss-primary);
+  cursor: pointer;
+}
+.ss-grade-list {
+  margin-top: 0.25rem;
+  max-height: 12rem;
+  overflow-y: auto;
+  border: 2px solid var(--ss-border);
+  border-radius: var(--ss-radius-input);
+  background: var(--ss-bg-card);
+}
+.ss-grade-list--error {
+  border-color: var(--ss-danger);
+}
+.ss-grade-list__item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0.6rem 0.85rem;
+  border: 0;
+  border-bottom: 1px solid var(--ss-border);
+  background: transparent;
+  color: var(--ss-text);
+  font-family: var(--ss-font-body);
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background var(--ss-anim-fast) ease;
+}
+.ss-grade-list__item:last-child {
+  border-bottom: 0;
+}
+.ss-grade-list__item:hover {
+  background: var(--ss-bg-muted);
+}
+.ss-grade-list__item--selected {
+  background: rgba(74, 124, 255, 0.12);
+  font-weight: 700;
+  color: var(--ss-primary-dark);
+}
+.ss-grade-list__item--selected::before {
+  content: "✓ ";
+  color: var(--ss-primary);
+  font-weight: 800;
+}
+.ss-grade-list__item:focus-visible {
+  outline: 3px solid var(--ss-primary);
+  outline-offset: -3px;
+}
+
+/* Card editor — responsive: 2-col Front/Back side-by-side on wide,
+ * stacked single column on narrow, actions wrap below. */
+.ss-card-editor {
+  display: grid;
+  grid-template-columns: auto 1fr 1fr auto;
+  grid-template-areas:
+    "handle front back  actions"
+    "handle image image actions";
+  gap: 0.6rem;
+  align-items: start;
+  padding: 0.75rem;
+  border: 1px solid var(--ss-border);
+  border-radius: var(--ss-radius-input);
+  margin-bottom: 0.6rem;
+  background: var(--ss-bg-soft);
+}
+.ss-card-editor__handle {
+  grid-area: handle;
+}
+.ss-card-editor__field:nth-of-type(1) {
+  grid-area: front;
+}
+.ss-card-editor__field:nth-of-type(2) {
+  grid-area: back;
+}
+.ss-card-editor__actions {
+  grid-area: actions;
+}
+@media (max-width: 640px) {
+  .ss-card-editor {
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas:
+      "handle front actions"
+      "handle back  actions"
+      "image  image  image";
+  }
+}
+@media (max-width: 420px) {
+  .ss-card-editor {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "handle"
+      "front"
+      "back"
+      "image"
+      "actions";
+  }
+  .ss-card-editor__handle {
+    display: none;
+  }
+  .ss-card-editor__actions {
+    flex-direction: row !important;
+    justify-content: flex-end;
+    gap: 0.5rem;
+  }
+}
+.ss-card-editor__handle {
+  cursor: grab;
+  color: var(--ss-text-dim);
+  display: flex;
+  align-items: center;
+  padding: 0.3rem;
+}
+.ss-card-editor__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+.ss-card-editor__field input {
+  width: 100%;
+  min-width: 0;
+}
+.ss-card-editor__field label {
+  font-size: 0.75rem;
+  color: var(--ss-text-dim);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+/* Image URL field sits on its own full-width row below front/back. */
+.ss-card-editor__field--image {
+  grid-area: image;
+}
+.ss-card-editor__preview {
+  margin: 0 auto;
+  max-height: 96px;
+  max-width: 160px;
+  width: auto;
+  object-fit: contain;
+  border-radius: var(--ss-radius-input);
+  border: 1px solid var(--ss-border);
+  background: var(--ss-bg-card);
+}
+.ss-card-editor__preview-error {
+  margin-top: 0.4rem;
+  font-size: 0.8rem;
+  color: var(--ss-danger, #c0392b);
+}
+.ss-card-editor__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+/* Inputs */
+.input {
+  border-radius: var(--ss-radius-input);
+  font-family: var(--ss-font-body);
+}
+
+/* Cards */
+.card {
+  border-radius: var(--ss-radius-card);
+  box-shadow: var(--ss-shadow-sm);
+}
+
+/* Layout helpers */
+.ss-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0.5rem 0;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.ss-header-row > * {
+  min-width: 0;
+}
+
+.ss-empty-state {
+  text-align: center;
+  padding: 2.5rem 1.5rem;
+  color: var(--ss-text-dim);
+  background: var(--ss-bg-card);
+  border-radius: var(--ss-radius-card);
+  border: 1px dashed var(--ss-border);
+}
+
+.ss-results-wrap {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: var(--ss-radius-card);
+  border: 1px solid var(--ss-border);
+}
+.ss-results-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+.ss-results-table th,
+.ss-results-table td {
+  text-align: left;
+  padding: 0.6rem 0.85rem;
+  border-bottom: 1px solid var(--ss-border);
+  white-space: nowrap;
+}
+.ss-results-table th {
+  background: var(--ss-bg-muted);
+  font-family: var(--ss-font-display);
+  font-weight: 800;
+}
+
+/* Admin deck row */
+.ss-deck-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 12px;
+}
+.ss-deck-row__info {
+  min-width: 0;
+}
+.ss-deck-row__title {
+  font-weight: 700;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+.ss-deck-row__actions {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.4rem;
+  flex: 0 1 auto;
+}
+
+/* Section label */
+.ss-section-label {
+  font-family: var(--ss-font-display);
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  color: var(--ss-text-dim);
+  margin: 1.5rem 0 0.5rem;
+}
+
+/* Import-cards modal — extends the SDK's .modal with extra room for the
+ * paste textarea + preview table. */
+.ss-import-modal {
+  width: min(640px, calc(100vw - 2rem));
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
+}
+@media (max-width: 480px) {
+  .ss-import-modal {
+    width: 100%;
+    max-height: 100vh;
+    border-radius: 0;
+  }
+}
+
+.ss-import-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.75rem;
+}
+
+/* Native <input type="file"> styled as a button via the wrapping label. */
+.ss-import-file {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.ss-import-textarea {
+  width: 100%;
+  min-height: 9rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.9rem;
+  resize: vertical;
+}
+
+.ss-import-preview {
+  margin-top: 0.5rem;
+  border: 1px solid var(--ss-border);
+  border-radius: var(--ss-radius-input);
+  overflow-x: auto;
+  background: var(--ss-bg-soft);
+}
+.ss-import-preview__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+.ss-import-preview__table th,
+.ss-import-preview__table td {
+  padding: 0.4rem 0.6rem;
+  border-bottom: 1px solid var(--ss-border);
+  text-align: left;
+  vertical-align: top;
+  overflow-wrap: anywhere;
+}
+.ss-import-preview__table th {
+  background: var(--ss-bg-muted);
+  font-family: var(--ss-font-display);
+  font-weight: 800;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ss-text-dim);
+}
+.ss-import-preview__table tbody tr:last-child td {
+  border-bottom: 0;
+}
+.ss-import-preview__thumb {
+  display: block;
+  max-height: 44px;
+  max-width: 64px;
+  width: auto;
+  object-fit: contain;
+  border-radius: 4px;
+}
+
+.ss-import-mode {
+  border: 1px solid var(--ss-border);
+  border-radius: var(--ss-radius-input);
+  padding: 0.6rem 0.75rem;
+}
+.ss-import-mode legend {
+  padding: 0 0.4rem;
+}
