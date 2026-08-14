@@ -31,7 +31,7 @@ export const CardEditor = ({
           onLoad={() => setImageError(false)}
         />
       )}
-      <div className="ss-card-editor__field">
+      <div className="ss-card-editor__field ss-card-editor__field--front">
         <label htmlFor={`${id}-front`}>Front</label>
         <input
           id={`${id}-front`}
@@ -62,7 +62,7 @@ export const CardEditor = ({
           </p>
         )}
       </div>
-      <div className="ss-card-editor__field">
+      <div className="ss-card-editor__field ss-card-editor__field--back">
         <label htmlFor={`${id}-back`}>Back</label>
         <input
           id={`${id}-back`}
@@ -73,14 +73,14 @@ export const CardEditor = ({
           maxLength={1000}
         />
       </div>
-      <div className="ss-card-editor__field">
+      <div className="ss-card-editor__field ss-card-editor__field--hint">
         <label htmlFor={`${id}-hint`}>Hint</label>
         <input
           id={`${id}-hint`}
           className="input"
           value={card.hint ?? ""}
           onChange={(e) => onChange({ ...card, hint: e.target.value })}
-          placeholder="Optional hint shown to the student"
+          placeholder="Optional hint"
           maxLength={1000}
         />
       </div>
@@ -109,7 +109,7 @@ export const CardEditor = ({
           onClick={onDelete}
           aria-label={`Delete card ${index + 1}`}
         >
-          <div className="h-4 w-4 bg-red-600 [mask-image:url('https://sdk-style.s3.amazonaws.com/icons/delete.svg')] [mask-size:contain] [mask-repeat:no-repeat]" />
+          <img src="https://sdk-style.s3.amazonaws.com/icons/delete.svg" alt="" className="h-4 w-4" />
         </button>
       </div>
     </div>
