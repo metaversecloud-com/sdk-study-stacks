@@ -73,6 +73,17 @@ export const CardEditor = ({
           maxLength={1000}
         />
       </div>
+      <div className="ss-card-editor__field">
+        <label htmlFor={`${id}-hint`}>Hint</label>
+        <input
+          id={`${id}-hint`}
+          className="input"
+          value={card.hint ?? ""}
+          onChange={(e) => onChange({ ...card, hint: e.target.value })}
+          placeholder="Optional hint shown to the student"
+          maxLength={1000}
+        />
+      </div>
       <div className="ss-card-editor__actions">
         <button
           type="button"
