@@ -906,7 +906,8 @@ body.ss-body--other {
   grid-template-columns: auto 1fr 1fr auto;
   grid-template-areas:
     "handle front back  actions"
-    "handle image image actions";
+    "handle image image actions"
+    "handle hint  hint  actions";
   gap: 0.6rem;
   align-items: start;
   padding: 0.75rem;
@@ -918,11 +919,14 @@ body.ss-body--other {
 .ss-card-editor__handle {
   grid-area: handle;
 }
-.ss-card-editor__field:nth-of-type(1) {
+.ss-card-editor__field--front {
   grid-area: front;
 }
-.ss-card-editor__field:nth-of-type(2) {
+.ss-card-editor__field--back {
   grid-area: back;
+}
+.ss-card-editor__field--hint {
+  grid-area: hint;
 }
 .ss-card-editor__actions {
   grid-area: actions;
@@ -933,7 +937,8 @@ body.ss-body--other {
     grid-template-areas:
       "handle front actions"
       "handle back  actions"
-      "image  image  image";
+      "image  image  image"
+      "hint   hint   hint";
   }
 }
 @media (max-width: 420px) {
@@ -944,6 +949,7 @@ body.ss-body--other {
       "front"
       "back"
       "image"
+      "hint"
       "actions";
   }
   .ss-card-editor__handle {
