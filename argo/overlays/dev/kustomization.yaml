@@ -21,3 +21,4 @@ images:
   - name: studystack0
     newName: 368076259134.dkr.ecr.us-east-1.amazonaws.com/sdk-example
     newTag: sdk-study-stacks
+    digest: sha256:b2e20df9ced5f0bcab28e503cb72f5578a237ad3f0a7a3566301682ee5bccdd1
