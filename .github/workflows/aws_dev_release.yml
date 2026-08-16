@@ -3,8 +3,15 @@ on:
   push:
     branches:
       - dev
+    # Argo CD Image Updater also write-backs to dev for apps enrolled in
+    # bootstrap/imageupdater-sdk-apps.yaml, touching only argo/. Ignoring
+    # that path stops the write-back from retriggering a build, and replaces
+    # the [skip ci] guard - which GitHub also applies to pull_request events
+    # (keyed on the PR HEAD commit), silently skipping dev -> main release PRs.
+    paths-ignore:
+      - 'argo/**'
   workflow_dispatch:
-          
+
 env:
   REPOSITORY: 'sdk-example'
   ECS_Cluster: "topia-dev-sdk-apps"
