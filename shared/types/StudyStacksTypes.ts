@@ -10,9 +10,9 @@ export const ALL_GRADES: readonly GradeType[] = [
 ];
 
 /**
- * Sentinel value for "every grade" on an ecosystem deck. Stored instead of
- * the full 13-element array to keep the data object small — by far the
- * common case is "All grades", and serializing one string beats serializing
+ * Sentinel value for "every grade" on a class deck. Stored instead of the
+ * full 13-element array to keep the data object small — by far the common
+ * case is "All grades", and serializing one string beats serializing
  * thirteen.
  */
 export const ALL_GRADES_SENTINEL = "all" as const;
@@ -49,11 +49,13 @@ export type FlipRatingType = "got_it" | "almost" | "missed";
 export type MasteryLevelType = 0 | 1 | 2 | 3 | 4 | 5;
 
 /**
- * A deck is either personal to one visitor (`"user"`) or shared across every
- * Study Stacks desk in the account (`"ecosystem"`). Only admins can write
- * ecosystem decks; anyone can create user decks for themselves.
+ * A deck is either personal to one visitor (`"user"`) or shared across
+ * every visitor who studies at THIS Study Stacks canvas (`"class"`). Class
+ * decks live on the dropped asset's own data object, so two Study Stacks
+ * canvases in the same world have independent class-deck lists. Only
+ * admins can write class decks; anyone can create user decks for themselves.
  */
-export type DeckScopeType = "user" | "ecosystem";
+export type DeckScopeType = "user" | "class";
 
 export interface CardType {
   id: CardIdType;
@@ -80,17 +82,17 @@ export interface DeckType {
   difficulty: "easy" | "medium" | "hard";
   status: "draft" | "published";
   cards: CardType[];
-  // Grade targeting only applies to ecosystem decks (teacher → class
+  // Grade targeting only applies to class decks (teacher → class
   // audience). User decks are personal, so this field is omitted on them.
-  // Ecosystem decks store either `"all"` (every grade — the common case)
+  // Class decks store either `"all"` (every grade — the common case)
   // or an explicit `Grade[]` subset; see `DeckGrades`.
   grades?: DeckGradesType;
-  // Authorship is only tracked on ecosystem decks (shared across admins).
+  // Authorship is only tracked on class decks (shared across admins).
   // User decks live in the owner's own visitor data object, so the creator
   // is implicit and these are omitted.
   createdByProfileId?: string;
   createdByDisplayName?: string;
-  // Per-deck leaderboard for ecosystem decks. Standard pipe-delimited
+  // Per-deck leaderboard for class decks. Standard pipe-delimited
   // leaderboard syntax used across the stack: `"{displayName}|{sessions}"`.
   // User decks omit this field (a personal deck has one owner, no
   // leaderboard).
@@ -185,11 +187,11 @@ export interface VisitorBadgeRecordType {
 }
 
 /**
- * Account-wide store. Ecosystem decks live here; per-deck leaderboards live
- * INSIDE each deck (`Deck.results`), so a single fetch of `studyStacksDecks`
- * carries everything an admin needs.
+ * Per-canvas store. Class decks live on the dropped-asset (key asset) data
+ * object; per-deck leaderboards live INSIDE each deck (`Deck.results`), so
+ * a single fetch of `studyStacksDecks` carries everything an admin needs.
  */
-export interface EcosystemDataObjectType {
+export interface KeyAssetDataObjectType {
   studyStacksDecks?: { [deckId: string]: DeckType };
   [key: string]: unknown;
 }

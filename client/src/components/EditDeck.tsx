@@ -34,7 +34,7 @@ const blankCard = (): CardType => ({
 
 export const EditDeck = ({ initial, onClose }: { initial: DeckType; onClose: () => void }) => {
   const dispatch = useContext(GlobalDispatchContext);
-  const { ecosystemDecks, userDecks, isAdmin } = useContext(GlobalStateContext);
+  const { classDecks, userDecks, isAdmin } = useContext(GlobalStateContext);
 
   const [deck, setDeck] = useState<DeckType>(initial);
   const [saving, setSaving] = useState(false);
@@ -103,19 +103,19 @@ export const EditDeck = ({ initial, onClose }: { initial: DeckType; onClose: () 
   const selectedGrades = expandGrades(deck.grades);
   const allGradesSelected = isAllGrades(deck.grades);
 
-  const isEcosystemDeck = deck.scope === "ecosystem";
+  const isClassDeck = deck.scope === "class";
 
   const isEditingExistingDeck =
-    ecosystemDecks.some((d) => d.id === initial.id) || userDecks.some((d) => d.id === initial.id);
+    classDecks.some((d) => d.id === initial.id) || userDecks.some((d) => d.id === initial.id);
 
   // Once a deck has been published it can't be reverted to a draft from here —
   // editing a published deck only lets you re-publish your changes.
   const isAlreadyPublished = isEditingExistingDeck && initial.status === "published";
 
   // User-scope decks skip the grade requirement entirely (they're personal —
-  // no audience to filter), so canPublish only enforces grades for ecosystem.
+  // no audience to filter), so canPublish only enforces grades for class decks.
   const canPublish =
-    deck.title.trim().length > 0 && (!isEcosystemDeck || selectedGrades.length > 0) && deck.cards.some(isCardComplete);
+    deck.title.trim().length > 0 && (!isClassDeck || selectedGrades.length > 0) && deck.cards.some(isCardComplete);
 
   const persist = async (status: DeckType["status"]) => {
     if (savingRef.current) return;
@@ -137,7 +137,7 @@ export const EditDeck = ({ initial, onClose }: { initial: DeckType; onClose: () 
     }
     if (status === "published" && !canPublish) {
       setValidationError(
-        isEcosystemDeck
+        isClassDeck
           ? "Need a title, at least one grade, and one card with a front (text or image) and a back to publish."
           : "Need a title and one card with a front (text or image) and a back to save.",
       );
@@ -149,12 +149,12 @@ export const EditDeck = ({ initial, onClose }: { initial: DeckType; onClose: () 
       const res = await backendAPI.post("/decks", { scope: deck.scope, deck: { ...deck, status } });
       if (res.data?.success) {
         const updated: DeckType = res.data.deck;
-        const targetList = updated.scope === "ecosystem" ? ecosystemDecks : userDecks;
+        const targetList = updated.scope === "class" ? classDecks : userDecks;
         const others = targetList.filter((d) => d.id !== updated.id);
         const nextList = [...others, updated];
         dispatch!({
           type: SET_DECKS,
-          payload: updated.scope === "ecosystem" ? { ecosystemDecks: nextList } : { userDecks: nextList },
+          payload: updated.scope === "class" ? { classDecks: nextList } : { userDecks: nextList },
         });
         onClose();
       }
@@ -217,7 +217,7 @@ export const EditDeck = ({ initial, onClose }: { initial: DeckType; onClose: () 
               </select>
             </div>
 
-            {isEcosystemDeck && (
+            {isClassDeck && (
               <div className="mt-2">
                 <span className="ss-field__label">Grade levels</span>
                 <label className="ss-checkbox-row">
@@ -279,19 +279,21 @@ export const EditDeck = ({ initial, onClose }: { initial: DeckType; onClose: () 
                   <label className="ss-checkbox-row">
                     <input
                       type="checkbox"
-                      checked={deck.scope === "ecosystem"}
+                      checked={deck.scope === "class"}
                       /* Scope is locked after first save — moving between the
-                       * Visitor and Ecosystem data objects would require recreating
+                       * Visitor and key-asset data objects would require recreating
                        * the deck (and student mastery tied to the old id would
                        * orphan). */
                       disabled={isEditingExistingDeck}
-                      onChange={(e) => setScope(e.target.checked ? "ecosystem" : "user")}
+                      onChange={(e) => setScope(e.target.checked ? "class" : "user")}
                     />
                     Make available to all students (Class deck)
                   </label>
                 )}
                 <p className="p3" style={{ color: "var(--ss-text-dim)" }}>
-                  {deck.scope === "ecosystem" ? "Available to all students." : "Only you will see this deck."}
+                  {deck.scope === "class"
+                    ? "Available to every student who studies at this Study Stacks board."
+                    : "Only you will see this deck."}
                 </p>
               </div>
             )}
@@ -363,7 +365,7 @@ export const EditDeck = ({ initial, onClose }: { initial: DeckType; onClose: () 
             "save with what cards?" state. Existing validation in persist()
             still enforces every rule when they do click. */}
         {step === 2 &&
-          (isEcosystemDeck ? (
+          (isClassDeck ? (
             <>
               {!isAlreadyPublished && (
                 <button className="btn btn-outline" onClick={() => persist("draft")} disabled={saving}>

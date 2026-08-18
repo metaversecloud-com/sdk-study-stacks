@@ -5,7 +5,7 @@ export const initialState: InitialState = {
   isAdmin: false,
   error: "",
   muted: false,
-  ecosystemDecks: [],
+  classDecks: [],
   userDecks: [],
   badges: {},
   visitorInventory: {},

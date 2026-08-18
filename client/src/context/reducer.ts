@@ -21,7 +21,7 @@ const globalReducer = (state: InitialState, action: ActionType): InitialState =>
       return {
         ...state,
         isAdmin: payload?.isAdmin ?? state.isAdmin,
-        ecosystemDecks: payload?.ecosystemDecks ?? state.ecosystemDecks,
+        classDecks: payload?.classDecks ?? state.classDecks,
         userDecks: payload?.userDecks ?? state.userDecks,
         visitorStudyData: payload?.visitorStudyData ?? state.visitorStudyData,
         badges: payload?.badges ?? state.badges,
@@ -32,7 +32,7 @@ const globalReducer = (state: InitialState, action: ActionType): InitialState =>
     case SET_DECKS:
       return {
         ...state,
-        ecosystemDecks: payload?.ecosystemDecks ?? state.ecosystemDecks,
+        classDecks: payload?.classDecks ?? state.classDecks,
         userDecks: payload?.userDecks ?? state.userDecks,
         error: "",
       };

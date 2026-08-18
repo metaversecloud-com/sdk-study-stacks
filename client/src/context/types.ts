@@ -59,8 +59,8 @@ export interface InitialState {
   isAdmin: boolean;
   error: string;
   muted: boolean;
-  /** admin-authored, account-wide; visible to everyone */
-  ecosystemDecks: DeckType[];
+  /** admin-authored, scoped to THIS Study Stacks canvas; visible to everyone who studies here */
+  classDecks: DeckType[];
   /** this visitor's personal decks (scope: "user") */
   userDecks: DeckType[];
   visitorStudyData?: VisitorStudyDataType;

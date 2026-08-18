@@ -24,7 +24,7 @@ const makeData = (overrides: Partial<VisitorStudyDataType> = {}): VisitorStudyDa
 
 const makeDeck = (id: string, subject: DeckType["subject"], cardIds: string[]): DeckType => ({
   id,
-  scope: "ecosystem",
+  scope: "class",
   title: id,
   subject,
   grades: ["5"],

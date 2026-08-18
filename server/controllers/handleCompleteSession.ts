@@ -5,7 +5,7 @@ import {
   deleteSession,
   errorHandler,
   evaluateBadges,
-  fetchEcosystemDecks,
+  fetchClassDecks,
   fetchUserDecks,
   findDeck,
   getCredentials,
@@ -34,10 +34,10 @@ export const handleCompleteSession = async (req: Request, res: Response) => {
       deleteSession(sessionId);
       return res.status(404).json({ success: false, message: "Deck no longer available." });
     }
-    // Pull every deck the visitor might have mastery in (ecosystem + their own)
+    // Pull every deck the visitor might have mastery in (class + their own)
     // so evaluateBadges can compute Deck Done / Polyglot across their full library.
-    const [ecoDecks, userDecks] = await Promise.all([fetchEcosystemDecks(credentials), fetchUserDecks(credentials)]);
-    const allDecks = { ...ecoDecks, ...userDecks };
+    const [classDecks, userDecks] = await Promise.all([fetchClassDecks(credentials), fetchUserDecks(credentials)]);
+    const allDecks = { ...classDecks, ...userDecks };
 
     const { visitor, visitorInventory } = await getVisitor(credentials, true);
     const dataKey = STUDY_STACKS_DATA_KEY;
@@ -68,10 +68,10 @@ export const handleCompleteSession = async (req: Request, res: Response) => {
       },
     );
 
-    // Per-deck leaderboard write — ecosystem decks only. User decks are
+    // Per-deck leaderboard write — class decks only. User decks are
     // personal (live in the owner's visitor data object), so there's no
     // audience to aggregate.
-    if (session.deckScope === "ecosystem") {
+    if (session.deckScope === "class") {
       const deckSessions = progress.sessionsCompleted;
       await updateDeckResult({
         credentials,

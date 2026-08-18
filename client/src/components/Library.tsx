@@ -10,7 +10,7 @@ export const Library = ({
   onPick: (deckId: string, scope: DeckScopeType) => void;
   onCreate?: () => void;
 }) => {
-  const { ecosystemDecks, userDecks, visitorStudyData } = useContext(GlobalStateContext);
+  const { classDecks, userDecks, visitorStudyData } = useContext(GlobalStateContext);
 
   const renderGroup = (decks: DeckType[]) =>
     decks.map((d) => (
@@ -19,10 +19,10 @@ export const Library = ({
 
   return (
     <div>
-      {ecosystemDecks.length > 0 && (
+      {classDecks.length > 0 && (
         <>
           <h3 className="ss-section-label">Class decks</h3>
-          <div className="ss-deck-grid">{renderGroup(ecosystemDecks)}</div>
+          <div className="ss-deck-grid">{renderGroup(classDecks)}</div>
         </>
       )}
 

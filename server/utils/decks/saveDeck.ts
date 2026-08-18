@@ -11,7 +11,7 @@ import {
   normalizeGrades,
   SubjectType,
 } from "@shared/types/StudyStacksTypes.js";
-import { Ecosystem, Visitor } from "../topiaInit.js";
+import { DroppedAsset, Visitor } from "../topiaInit.js";
 import { standardizeError } from "../standardizeError.js";
 
 const VALID_SUBJECTS: SubjectType[] = ["math", "ela", "science", "history", "language", "art", "other"];
@@ -70,7 +70,7 @@ export const buildDeckFromInput = ({ credentials, scope, incoming, existing }: S
 
   const subject: SubjectType = VALID_SUBJECTS.includes(incoming.subject) ? incoming.subject : existing?.subject || "other";
 
-  // Grade targeting only applies to ecosystem decks; we don't compute it for
+  // Grade targeting only applies to class decks; we don't compute it for
   // user decks at all so it doesn't get written to the visitor data object.
   //
   // Incoming wire forms we accept (for both new and existing decks):
@@ -81,7 +81,7 @@ export const buildDeckFromInput = ({ credentials, scope, incoming, existing }: S
   // If nothing usable comes in, we fall back to the existing value (if any)
   // or default new decks to `"all"`.
   const resolveIncomingGrades = (): DeckGradesType | undefined => {
-    if (scope !== "ecosystem") return undefined;
+    if (scope !== "class") return undefined;
     if (incoming.grades === ALL_GRADES_SENTINEL) return ALL_GRADES_SENTINEL;
     if (Array.isArray(incoming.grades) && incoming.grades.length > 0) {
       const arr = incoming.grades.map((g: any) => String(g)) as GradeType[];
@@ -133,10 +133,10 @@ export const buildDeckFromInput = ({ credentials, scope, incoming, existing }: S
     difficulty,
     status: requestedStatus,
     cards,
-    // Ecosystem-only fields. Omitted entirely from user decks so they don't
+    // Class-only fields. Omitted entirely from user decks so they don't
     // bloat the visitor data object.
     ...(grades ? { grades } : {}),
-    ...(scope === "ecosystem"
+    ...(scope === "class"
       ? {
           createdByProfileId: existing?.createdByProfileId || profileId || "",
           createdByDisplayName: existing?.createdByDisplayName || displayName || "Teacher",
@@ -148,7 +148,7 @@ export const buildDeckFromInput = ({ credentials, scope, incoming, existing }: S
 
 /**
  * Persist a deck to the correct SDK data object based on scope. Caller is
- * responsible for auth checks (admin gate for ecosystem; ownership for user).
+ * responsible for auth checks (admin gate for class; ownership for user).
  */
 export const persistDeck = async ({
   credentials,
@@ -161,9 +161,10 @@ export const persistDeck = async ({
 }): Promise<void> => {
   try {
     const lockId = `studyStacksDecks-${deck.id}-${Math.round(Date.now() / 30000) * 30000}`;
-    if (scope === "ecosystem") {
-      const ecosystem = await Ecosystem.create({ credentials });
-      await ecosystem.updateDataObject(
+    if (scope === "class") {
+      const { assetId, urlSlug } = credentials;
+      const keyAsset = await DroppedAsset.create(assetId, urlSlug, { credentials });
+      await keyAsset.updateDataObject(
         { [`studyStacksDecks.${deck.id}`]: deck },
         { lock: { lockId, releaseLock: true } },
       );
@@ -191,9 +192,10 @@ export const deleteDeck = async ({
 }): Promise<void> => {
   try {
     const lockId = `studyStacksDecks-del-${deckId}-${Math.round(Date.now() / 30000) * 30000}`;
-    if (scope === "ecosystem") {
-      const ecosystem = await Ecosystem.create({ credentials });
-      await ecosystem.updateDataObject(
+    if (scope === "class") {
+      const { assetId, urlSlug } = credentials;
+      const keyAsset = await DroppedAsset.create(assetId, urlSlug, { credentials });
+      await keyAsset.updateDataObject(
         { [`studyStacksDecks.${deckId}`]: null },
         { lock: { lockId, releaseLock: true } },
       );

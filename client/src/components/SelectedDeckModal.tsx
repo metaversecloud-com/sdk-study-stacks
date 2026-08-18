@@ -16,7 +16,7 @@ export const SelectedDeckModal = ({
   deck: DeckType;
   onPick: (mode: StudyModeType) => void;
   onCancel: () => void;
-  /** Render an Analytics icon. Caller decides eligibility (admin + ecosystem
+  /** Render an Analytics icon. Caller decides eligibility (admin + class
    * scope) and supplies the click handler — usually `openResultsInNewTab(deck)`,
    * which pops a printable per-student leaderboard in a new browser tab. */
   onViewAnalytics?: () => void;
@@ -30,7 +30,7 @@ export const SelectedDeckModal = ({
   onDelete?: () => void;
 }) => {
   const dispatch = useContext(GlobalDispatchContext);
-  const { ecosystemDecks, userDecks } = useContext(GlobalStateContext);
+  const { classDecks, userDecks } = useContext(GlobalStateContext);
   // Quiz mode needs 4 multiple-choice options per question (1 correct + 3
   // distractors). Distractors are drawn from other cards' backs server-side
   // (see `computeNextCards`), where matches to the correct answer are
@@ -53,10 +53,10 @@ export const SelectedDeckModal = ({
   const handleDelete = async () => {
     try {
       await backendAPI.delete(`/decks/${deck.id}`, { params: { scope: deck.scope } });
-      if (deck.scope === "ecosystem") {
+      if (deck.scope === "class") {
         dispatch!({
           type: SET_DECKS,
-          payload: { ecosystemDecks: ecosystemDecks.filter((d) => d.id !== deck.id) },
+          payload: { classDecks: classDecks.filter((d) => d.id !== deck.id) },
         });
       } else {
         dispatch!({

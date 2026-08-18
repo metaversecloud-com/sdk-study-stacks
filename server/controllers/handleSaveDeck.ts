@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import {
   buildDeckFromInput,
   errorHandler,
-  fetchEcosystemDecks,
+  fetchClassDecks,
   fetchUserDecks,
   getCredentials,
   getVisitor,
@@ -19,25 +19,25 @@ export const handleSaveDeck = async (req: Request, res: Response) => {
     if (!incoming || typeof incoming !== "object") {
       return res.status(400).json({ success: false, message: "Missing deck in request body." });
     }
-    if (scope !== "user" && scope !== "ecosystem") {
+    if (scope !== "user" && scope !== "class") {
       return res.status(400).json({ success: false, message: "Invalid scope." });
     }
 
     const { visitor } = await getVisitor(credentials, true);
-    if (scope === "ecosystem" && !visitor.isAdmin) {
-      return res.status(403).json({ success: false, message: "Only admins can save ecosystem decks." });
+    if (scope === "class" && !visitor.isAdmin) {
+      return res.status(403).json({ success: false, message: "Only admins can save class decks." });
     }
 
-    // Look up existing deck so we preserve ecosystem-only metadata
+    // Look up existing deck so we preserve class-only metadata
     // (createdBy*) across edits.
     const existingMap =
-      scope === "ecosystem" ? await fetchEcosystemDecks(credentials) : await fetchUserDecks(credentials);
+      scope === "class" ? await fetchClassDecks(credentials) : await fetchUserDecks(credentials);
     const incomingId = incoming.id ? String(incoming.id) : undefined;
     const existing = incomingId ? existingMap[incomingId] : undefined;
 
     // No per-deck owner check for user decks: they're fetched from the calling
     // visitor's own data object, so a user can only ever edit their own. The
-    // admin gate above covers ecosystem decks.
+    // admin gate above covers class decks.
 
     const { deck, validationError } = buildDeckFromInput({ credentials, scope, incoming, existing });
     if (validationError) return res.status(400).json({ success: false, message: validationError });

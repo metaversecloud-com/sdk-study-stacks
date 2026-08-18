@@ -1,13 +1,15 @@
 import { Credentials } from "../../types/index.js";
-import { DeckType, EcosystemDataObjectType } from "@shared/types/StudyStacksTypes.js";
+import { DeckType, KeyAssetDataObjectType } from "@shared/types/StudyStacksTypes.js";
 import { VisitorDataObjectType } from "@shared/types/VisitorData.js";
-import { Ecosystem, Visitor } from "../topiaInit.js";
+import { DroppedAsset, Visitor } from "../topiaInit.js";
 import { standardizeError } from "../standardizeError.js";
 
 /**
- * Decks live in two SDK-owned data objects (mirrors sdk-trivia's set storage):
- *  - Ecosystem data object → ecosystem-scope decks (account-wide, all worlds)
- *  - Visitor data object   → user-scope decks (per-profile, cross-world)
+ * Decks live in two SDK-owned data objects:
+ *  - Key asset (dropped) data object → class-scope decks (per-canvas, shared
+ *    by every visitor who studies at that Study Stacks board)
+ *  - Visitor data object             → user-scope decks (per-profile,
+ *    cross-world)
  *
  * Both are stored under the top-level key `studyStacksDecks`.
  */
@@ -26,24 +28,25 @@ const pruneNullEntries = (map: Record<string, DeckType | null | undefined>): Rec
   return out;
 };
 
-export const fetchEcosystemDecks = async (credentials: Credentials): Promise<Record<string, DeckType>> => {
+export const fetchClassDecks = async (credentials: Credentials): Promise<Record<string, DeckType>> => {
   try {
-    const ecosystem = await Ecosystem.create({ credentials });
-    const data = ((await ecosystem.fetchDataObject()) as EcosystemDataObjectType) || {};
+    const { assetId, urlSlug } = credentials;
+    const keyAsset = await DroppedAsset.create(assetId, urlSlug, { credentials });
+    const data = ((await keyAsset.fetchDataObject()) as KeyAssetDataObjectType) || {};
     if (!data.studyStacksDecks) {
       try {
-        await ecosystem.setDataObject(
+        await keyAsset.setDataObject(
           { ...data, studyStacksDecks: {} },
-          { lock: { lockId: `studyStacks-eco-init-${Date.now()}`, releaseLock: true } },
+          { lock: { lockId: `studyStacks-class-init-${Date.now()}`, releaseLock: true } },
         );
       } catch (err) {
-        console.warn("fetchEcosystemDecks: failed to seed empty decks map", err);
+        console.warn("fetchClassDecks: failed to seed empty decks map", err);
       }
       return {};
     }
     return pruneNullEntries(data.studyStacksDecks);
   } catch (error) {
-    console.warn("fetchEcosystemDecks: returning empty.", error);
+    console.warn("fetchClassDecks: returning empty.", error);
     return {};
   }
 };
@@ -62,10 +65,10 @@ export const fetchUserDecks = async (credentials: Credentials): Promise<Record<s
 export const findDeck = async (
   credentials: Credentials,
   deckId: string,
-  scope: "ecosystem" | "user",
+  scope: "class" | "user",
 ): Promise<DeckType | undefined> => {
-  if (scope === "ecosystem") {
-    const decks = await fetchEcosystemDecks(credentials);
+  if (scope === "class") {
+    const decks = await fetchClassDecks(credentials);
     return decks[deckId];
   }
   const decks = await fetchUserDecks(credentials);
