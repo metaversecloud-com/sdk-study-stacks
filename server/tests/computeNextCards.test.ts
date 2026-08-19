@@ -4,7 +4,7 @@ import { CardType, DeckType, DeckProgressType } from "@shared/types/StudyStacksT
 const makeCard = (id: string): CardType => ({ id, front: `front ${id}`, back: `back ${id}` });
 const makeDeck = (ids: string[]): DeckType => ({
   id: "d1",
-  scope: "ecosystem",
+  scope: "class",
   title: "T",
   subject: "math",
   grades: ["5"],
@@ -67,7 +67,7 @@ describe("computeNextCards", () => {
     const wildcard: CardType = { id: "math-4", front: "1+1", back: "2" };
     const deck: DeckType = {
       id: "d1",
-      scope: "ecosystem",
+      scope: "class",
       title: "T",
       subject: "math",
       grades: ["5"],

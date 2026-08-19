@@ -31,7 +31,7 @@ const blankUserDeck = (): DeckType => ({
 
 export const Home = () => {
   const dispatch = useContext(GlobalDispatchContext);
-  const { ecosystemDecks, userDecks, hasInteractiveParams, isAdmin, muted, visitorStudyData } =
+  const { classDecks, userDecks, hasInteractiveParams, isAdmin, muted, visitorStudyData } =
     useContext(GlobalStateContext);
 
   const [searchParams] = useSearchParams();
@@ -64,17 +64,17 @@ export const Home = () => {
   // in the data object (Topia's delete-by-setting-null pattern). Guard keeps
   // this from crashing on a stale payload.
   const findDeckById = (id: string | null): DeckType | null =>
-    id ? [...ecosystemDecks, ...userDecks].find((d) => d && d.id === id) || null : null;
+    id ? [...classDecks, ...userDecks].find((d) => d && d.id === id) || null : null;
 
   const studyingDeck = useMemo(
     () => findDeckById(studyingDeckId),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [ecosystemDecks, userDecks, studyingDeckId],
+    [classDecks, userDecks, studyingDeckId],
   );
   const pickingDeck = useMemo(
     () => findDeckById(pickingDeckId),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [ecosystemDecks, userDecks, pickingDeckId],
+    [classDecks, userDecks, pickingDeckId],
   );
 
   // Tint the whole app background to the selected deck's subject color. We theme
@@ -95,14 +95,14 @@ export const Home = () => {
   const firstName = displayName.split(" ")[0];
 
   // User decks are always the current visitor's own, so they're always
-  // editable; ecosystem decks are editable only by admins (matching the
-  // server-side `isAdmin` gate for ecosystem scope).
+  // editable; class decks are editable only by admins (matching the
+  // server-side `isAdmin` gate for class scope).
   const canEdit = (deck: DeckType | null): boolean =>
-    Boolean(deck && (deck.scope === "user" || (deck.scope === "ecosystem" && isAdmin)));
+    Boolean(deck && (deck.scope === "user" || (deck.scope === "class" && isAdmin)));
 
-  // Per-deck analytics only exist for ecosystem decks — user decks don't
+  // Per-deck analytics only exist for class decks — user decks don't
   // accumulate a leaderboard. Admin-gated to match the old AdminView access.
-  const canViewAnalytics = (deck: DeckType | null): boolean => Boolean(deck && deck.scope === "ecosystem" && isAdmin);
+  const canViewAnalytics = (deck: DeckType | null): boolean => Boolean(deck && deck.scope === "class" && isAdmin);
 
   let content;
   if (studyingDeck) {

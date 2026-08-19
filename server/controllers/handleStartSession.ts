@@ -29,7 +29,7 @@ export const handleStartSession = async (req: Request, res: Response) => {
     if (!["flip", "quiz", "sprint"].includes(mode)) {
       return res.status(400).json({ success: false, message: "Invalid mode." });
     }
-    if (scope !== "user" && scope !== "ecosystem") {
+    if (scope !== "user" && scope !== "class") {
       return res.status(400).json({ success: false, message: "Invalid scope." });
     }
 
@@ -38,9 +38,9 @@ export const handleStartSession = async (req: Request, res: Response) => {
 
     const { visitor } = await getVisitor(credentials, true);
 
-    // Ecosystem drafts are admin-only. User decks come from the caller's own
+    // Class drafts are admin-only. User decks come from the caller's own
     // data object, so their drafts are always the caller's to study.
-    if (deck.status !== "published" && scope === "ecosystem" && !visitor.isAdmin) {
+    if (deck.status !== "published" && scope === "class" && !visitor.isAdmin) {
       return res.status(404).json({ success: false, message: "Deck not found." });
     }
 

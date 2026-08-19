@@ -12,7 +12,7 @@ export const IconButton = ({
   onClick: () => void;
 }) => (
   <div className="tooltip">
-    <span className="p3 tooltip-content" style={{ whiteSpace: "nowrap" }}>
+    <span className="p3 tooltip-content ml-3" style={{ whiteSpace: "nowrap" }}>
       {label}
     </span>
     {!isTextBtn ? (

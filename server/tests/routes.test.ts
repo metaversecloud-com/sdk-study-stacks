@@ -48,7 +48,7 @@ jest.mock("@utils/index.js", () => ({
     totalCardsStudied: raw?.totalCardsStudied ?? 0,
     totalSessionsCompleted: raw?.totalSessionsCompleted ?? 0,
   })),
-  fetchEcosystemDecks: jest.fn(),
+  fetchClassDecks: jest.fn(),
   fetchUserDecks: jest.fn(),
   updateDeckResult: jest.fn(),
   findDeck: jest.fn(),
@@ -74,7 +74,7 @@ describe("GET /system/health", () => {
 });
 
 describe("GET /config", () => {
-  test("returns ecosystem + user decks; hides ecosystem drafts from students", async () => {
+  test("returns class + user decks; hides class drafts from students", async () => {
     mockUtils.getVisitor.mockResolvedValue({
       visitor: {
         isAdmin: false,
@@ -90,9 +90,9 @@ describe("GET /config", () => {
       visitorInventory: {},
     });
     mockUtils.getBadges.mockResolvedValue({ FirstStep: { id: "", name: "FirstStep", icon: "", description: "" } });
-    mockUtils.fetchEcosystemDecks.mockResolvedValue({
-      d1: { id: "d1", scope: "ecosystem", title: "Pub", status: "published", cards: [] },
-      d2: { id: "d2", scope: "ecosystem", title: "Draft", status: "draft", cards: [] },
+    mockUtils.fetchClassDecks.mockResolvedValue({
+      d1: { id: "d1", scope: "class", title: "Pub", status: "published", cards: [] },
+      d2: { id: "d2", scope: "class", title: "Draft", status: "draft", cards: [] },
     });
     mockUtils.fetchUserDecks.mockResolvedValue({
       u1: {
@@ -109,29 +109,29 @@ describe("GET /config", () => {
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
     expect(res.body.isAdmin).toBe(false);
-    expect(res.body.ecosystemDecks).toHaveLength(1); // draft hidden from student
-    expect(res.body.ecosystemDecks[0].id).toBe("d1");
+    expect(res.body.classDecks).toHaveLength(1); // draft hidden from student
+    expect(res.body.classDecks[0].id).toBe("d1");
     expect(res.body.userDecks).toHaveLength(1); // student sees their own draft
     expect(res.body.userDecks[0].id).toBe("u1");
     expect(res.body.results).toBeUndefined(); // students don't get aggregate results
     expect(res.body.badges).toBeDefined();
   });
 
-  test("admin sees draft ecosystem decks + aggregate results", async () => {
+  test("admin sees draft class decks + aggregate results", async () => {
     mockUtils.getVisitor.mockResolvedValue({
       visitor: { isAdmin: true, dataObject: {} },
       visitorInventory: {},
     });
     mockUtils.getBadges.mockResolvedValue({});
-    mockUtils.fetchEcosystemDecks.mockResolvedValue({
-      d1: { id: "d1", scope: "ecosystem", status: "draft", cards: [] },
-      d2: { id: "d2", scope: "ecosystem", status: "published", cards: [] },
+    mockUtils.fetchClassDecks.mockResolvedValue({
+      d1: { id: "d1", scope: "class", status: "draft", cards: [] },
+      d2: { id: "d2", scope: "class", status: "published", cards: [] },
     });
     mockUtils.fetchUserDecks.mockResolvedValue({});
 
     const app = makeApp();
     const res = await request(app).get("/api/config").query(baseCreds);
-    expect(res.body.ecosystemDecks).toHaveLength(2);
+    expect(res.body.classDecks).toHaveLength(2);
     expect(res.body.isAdmin).toBe(true);
   });
 });
@@ -165,30 +165,30 @@ describe("POST /decks", () => {
     expect(mockUtils.persistDeck).toHaveBeenCalled();
   });
 
-  test("non-admin cannot save an ecosystem-scope deck", async () => {
+  test("non-admin cannot save an class-scope deck", async () => {
     mockUtils.getVisitor.mockResolvedValue({ visitor: { isAdmin: false }, visitorInventory: {} });
     const app = makeApp();
     const res = await request(app)
       .post("/api/decks")
       .query(baseCreds)
-      .send({ scope: "ecosystem", deck: { title: "T" } });
+      .send({ scope: "class", deck: { title: "T" } });
     expect(res.status).toBe(403);
   });
 
-  test("admin can save an ecosystem-scope deck", async () => {
+  test("admin can save an class-scope deck", async () => {
     mockUtils.getVisitor.mockResolvedValue({ visitor: { isAdmin: true }, visitorInventory: {} });
-    mockUtils.fetchEcosystemDecks.mockResolvedValue({});
+    mockUtils.fetchClassDecks.mockResolvedValue({});
     mockUtils.buildDeckFromInput.mockReturnValue({
-      deck: { id: "e_new", scope: "ecosystem", title: "Civil War", cards: [] },
+      deck: { id: "e_new", scope: "class", title: "Civil War", cards: [] },
       isNew: true,
     });
     const app = makeApp();
     const res = await request(app)
       .post("/api/decks")
       .query(baseCreds)
-      .send({ scope: "ecosystem", deck: { title: "Civil War" } });
+      .send({ scope: "class", deck: { title: "Civil War" } });
     expect(res.status).toBe(200);
-    expect(res.body.deck.scope).toBe("ecosystem");
+    expect(res.body.deck.scope).toBe("class");
   });
 
   test("non-admin can save their own user deck", async () => {
@@ -211,7 +211,7 @@ describe("POST /decks", () => {
 
   test("propagates build validation errors", async () => {
     mockUtils.getVisitor.mockResolvedValue({ visitor: { isAdmin: true }, visitorInventory: {} });
-    mockUtils.fetchEcosystemDecks.mockResolvedValue({});
+    mockUtils.fetchClassDecks.mockResolvedValue({});
     mockUtils.buildDeckFromInput.mockReturnValue({
       deck: {} as any,
       isNew: true,
@@ -221,30 +221,30 @@ describe("POST /decks", () => {
     const res = await request(app)
       .post("/api/decks")
       .query(baseCreds)
-      .send({ scope: "ecosystem", deck: { title: "T" } });
+      .send({ scope: "class", deck: { title: "T" } });
     expect(res.status).toBe(400);
     expect(res.body.message).toMatch(/100 cards/);
   });
 });
 
 describe("DELETE /decks/:deckId", () => {
-  test("admin can delete an ecosystem deck", async () => {
+  test("admin can delete an class deck", async () => {
     mockUtils.getVisitor.mockResolvedValue({ visitor: { isAdmin: true }, visitorInventory: {} });
-    mockUtils.findDeck.mockResolvedValue({ id: "d1", scope: "ecosystem" });
+    mockUtils.findDeck.mockResolvedValue({ id: "d1", scope: "class" });
     const app = makeApp();
     const res = await request(app)
       .delete("/api/decks/d1")
-      .query({ ...baseCreds, scope: "ecosystem" });
+      .query({ ...baseCreds, scope: "class" });
     expect(res.status).toBe(200);
     expect(mockUtils.deleteDeck).toHaveBeenCalled();
   });
 
-  test("non-admin cannot delete an ecosystem deck", async () => {
+  test("non-admin cannot delete an class deck", async () => {
     mockUtils.getVisitor.mockResolvedValue({ visitor: { isAdmin: false }, visitorInventory: {} });
     const app = makeApp();
     const res = await request(app)
       .delete("/api/decks/d1")
-      .query({ ...baseCreds, scope: "ecosystem" });
+      .query({ ...baseCreds, scope: "class" });
     expect(res.status).toBe(403);
   });
 
@@ -266,7 +266,7 @@ describe("POST /session/start", () => {
     const res = await request(app)
       .post("/api/session/start")
       .query(baseCreds)
-      .send({ deckId: "d1", scope: "ecosystem", mode: "bogus" });
+      .send({ deckId: "d1", scope: "class", mode: "bogus" });
     expect(res.status).toBe(400);
   });
 
@@ -282,7 +282,7 @@ describe("POST /session/start", () => {
   test("mints a session id and returns cards", async () => {
     mockUtils.findDeck.mockResolvedValue({
       id: "d1",
-      scope: "ecosystem",
+      scope: "class",
       status: "published",
       cards: [{ id: "c1", front: "Q", back: "A" }],
     });
@@ -297,7 +297,7 @@ describe("POST /session/start", () => {
     const res = await request(app)
       .post("/api/session/start")
       .query(baseCreds)
-      .send({ deckId: "d1", scope: "ecosystem", mode: "flip" });
+      .send({ deckId: "d1", scope: "class", mode: "flip" });
     expect(res.status).toBe(200);
     expect(res.body.sessionId).toBeDefined();
     expect(res.body.cards).toHaveLength(1);
@@ -328,7 +328,7 @@ describe("POST /session/answer", () => {
       visitorId: 1,
       assetId: "asset-123",
       deckId: "d1",
-      deckScope: "ecosystem",
+      deckScope: "class",
       mode: "quiz",
       cardIds: ["c1"],
       startedAt: 0,
@@ -340,7 +340,7 @@ describe("POST /session/answer", () => {
     });
     mockUtils.findDeck.mockResolvedValue({
       id: "d1",
-      scope: "ecosystem",
+      scope: "class",
       status: "published",
       cards: [{ id: "c1", front: "Q", back: "A" }],
     });
@@ -368,7 +368,7 @@ describe("POST /session/complete", () => {
       visitorId: 1,
       assetId: "asset-123",
       deckId: "d1",
-      deckScope: "ecosystem",
+      deckScope: "class",
       mode: "flip",
       cardIds: ["c1"],
       startedAt: 0,
@@ -380,11 +380,11 @@ describe("POST /session/complete", () => {
     });
     mockUtils.findDeck.mockResolvedValue({
       id: "d1",
-      scope: "ecosystem",
+      scope: "class",
       subject: "math",
       cards: [{ id: "c1", front: "Q", back: "A" }],
     });
-    mockUtils.fetchEcosystemDecks.mockResolvedValue({});
+    mockUtils.fetchClassDecks.mockResolvedValue({});
     mockUtils.fetchUserDecks.mockResolvedValue({});
     mockUtils.updateDeckResult.mockResolvedValue(undefined);
     mockUtils.getVisitor.mockResolvedValue({

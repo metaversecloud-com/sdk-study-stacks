@@ -15,8 +15,8 @@ export const handleGetDeck = async (req: Request, res: Response) => {
     const { deckId } = req.params;
     if (!deckId) return res.status(400).json({ success: false, message: "deckId is required." });
 
-    const scope = (req.query.scope as DeckScopeType) || "ecosystem";
-    if (scope !== "user" && scope !== "ecosystem") {
+    const scope = (req.query.scope as DeckScopeType) || "class";
+    if (scope !== "user" && scope !== "class") {
       return res.status(400).json({ success: false, message: "Invalid scope." });
     }
 
@@ -25,9 +25,9 @@ export const handleGetDeck = async (req: Request, res: Response) => {
 
     const { visitor } = await getVisitor(credentials, true);
 
-    // Ecosystem drafts are admin-only. User decks come from the caller's own
+    // Class drafts are admin-only. User decks come from the caller's own
     // data object, so their drafts are always the caller's to view.
-    if (deck.status !== "published" && scope === "ecosystem" && !visitor.isAdmin) {
+    if (deck.status !== "published" && scope === "class" && !visitor.isAdmin) {
       return res.status(404).json({ success: false, message: "Deck not found." });
     }
 

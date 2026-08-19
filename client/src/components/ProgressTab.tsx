@@ -5,8 +5,8 @@ import MasteryRing from "./MasteryRing";
 import StatCard from "./StatCard";
 
 export const ProgressTab = () => {
-  const { visitorStudyData, ecosystemDecks, userDecks } = useContext(GlobalStateContext);
-  const decks = [...ecosystemDecks, ...userDecks];
+  const { visitorStudyData, classDecks, userDecks } = useContext(GlobalStateContext);
+  const decks = [...classDecks, ...userDecks];
 
   const streak = visitorStudyData?.streak || { current: 0, longest: 0, lastDay: "" };
   const totalCards = visitorStudyData?.totalCardsStudied || 0;

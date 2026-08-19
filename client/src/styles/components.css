@@ -632,14 +632,14 @@ body.ss-body--other {
 .ss-quiz-option {
   text-align: left;
   min-height: 56px;
+  max-height: fit-content;
+  height: auto;
   border-radius: var(--ss-radius-btn);
   font-weight: 600;
   background: var(--ss-bg-card);
   border: 2px solid var(--ss-border);
   color: var(--ss-text);
   padding: 0.75rem 1.1rem;
-  white-space: normal;
-  overflow-wrap: anywhere;
   line-height: 1.35;
 }
 .ss-quiz-option:hover {
