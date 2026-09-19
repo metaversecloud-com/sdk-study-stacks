@@ -5,7 +5,6 @@ resources:
   - studystack0-config.yaml
   - studystack0-sealedsecret.yaml
   - studystack0-httpscaledobject.yaml
-  - studystack0-interceptor-ingress.yaml
 patches:
   # Drop the direct ALB Ingress: dev is fronted through the KEDA interceptor.
   - target:
