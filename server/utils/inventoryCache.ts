@@ -27,8 +27,13 @@ export const getCachedInventoryItems = async ({
     const ecosystem = await Ecosystem.create({ credentials });
     await ecosystem.fetchInventoryItems();
 
+    // INACTIVE items are stripped at the cache layer so every downstream
+    // consumer (badges, drops, etc.) gets a clean list — they shouldn't
+    // render, unlock, or reward an item the ecosystem has retired.
     inventoryCache = {
-      items: (ecosystem.inventoryItems as InventoryItemInterface[]) || [],
+      items: ((ecosystem.inventoryItems as InventoryItemInterface[]) || []).filter(
+        (item) => (item as any)?.status !== "INACTIVE",
+      ),
       timestamp: now,
     };
     return inventoryCache.items;
