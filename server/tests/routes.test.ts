@@ -30,6 +30,7 @@ jest.mock("@utils/index.js", () => ({
   getCredentials: jest.fn(),
   getVisitor: jest.fn(),
   getBadges: jest.fn(),
+  getVisitorBadges: jest.fn(),
   evaluateBadges: jest.fn(),
   computeNextCards: jest.fn(),
   createSession: jest.fn(),
@@ -287,7 +288,7 @@ describe("POST /session/start", () => {
       cards: [{ id: "c1", front: "Q", back: "A" }],
     });
     mockUtils.getVisitor.mockResolvedValue({
-      visitor: { isAdmin: false, dataObject: {} },
+      visitor: { isAdmin: false, dataObject: {}, updateDataObject: jest.fn() },
       visitorInventory: {},
     });
     mockUtils.computeNextCards.mockReturnValue([{ card: { id: "c1", front: "Q", back: "A" } }]);
@@ -399,6 +400,7 @@ describe("POST /session/complete", () => {
           },
         },
         updateDataObject: updateVisitor,
+        fetchInventoryItems: jest.fn(),
       },
       visitorInventory: {},
     });
